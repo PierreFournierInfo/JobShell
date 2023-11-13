@@ -11,3 +11,7 @@ void pwd(){
     V_return=0;
     return 0;
 }
+
+void point_interrogation(){
+    return V_return;
+}
