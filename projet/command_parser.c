@@ -6,51 +6,44 @@
 #include <sys/wait.h>
 int V_return;
 
-void pwd(){
+int pwd(){
     char *buf;
     size_t size;
     getcwd(buf,size);
     if(errno==ERANGE){V_return=1;return 1;}
-    printf(buf);
+    printf("%s",buf);
     V_return=0;
     return 0;
 }
 
-void point_interrogation(){
+int point_interrogation(){
     return V_return;
 }
 
-void exit(int val){
+int exit_bis(int val){
     pid_t p=fork();// tentative 1
     if(p>0){
         if(kill(p,0)==0){
             V_return=1;
             return 1;
         }else{
-            if(val!=NULL){
+            if(val!=0){
                 V_return=val;
                 return val;
             }else{
                 return V_return;
             }
         }
+    }else{
+        
     }
    
 }
-
-void jobs(){
-    pid_t enfant=fork();
-    if(enfant==-1){
-        perror("erreur lors du fork");
-        return -1;
-
-    }else if(enfant==0){
-        printf("processus enfant (PID: %d)/n",getpid());
-        execlp("ps","ps","-ef",NULL);
-
+int cd(char *path){
+    int test=chdir(path);
+    if(test==0){
+        printf("réussite du cd");
     }else{
-        pritnf("processus parent (PID: %d), mon enfant a le pid %d/n",getpid(),enfant);
-        wait(NULL);
+        perror("erreur");
     }
-    return 0;
 }
