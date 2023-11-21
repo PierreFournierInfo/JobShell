@@ -10,8 +10,10 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-void display();
-void update_prompt();
+char* display();
+char* update_prompt();
 int prompt();
+char** diviserEnMots(const char* chaine);
+void libererTableauMots(char** tableauMots);
 
 #endif // COMMAND_PARSER_H
