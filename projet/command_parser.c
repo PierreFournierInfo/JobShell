@@ -10,7 +10,7 @@
 #define PATH_MAX 512
 
 int valeur_retour=1;
-
+char chemin[1024];
 bool is_internal_command(const char *command) {
     return (strcmp(command, "pwd") == 0 || 
             strcmp(command, "cd") == 0 || 
@@ -57,6 +57,7 @@ void execute_cd(const char *command) {
 
 
 void execute_internal_command(const char *command) {
+
     // Vérifie si la commande est "pwd"
     if (strcmp(command, "pwd") == 0) {
        
@@ -82,6 +83,7 @@ void execute_internal_command(const char *command) {
         if(command[2] == '\0'){
             // Vérifie si le chemin est obtenu avec succès
             if (home_dir != NULL) {
+                if (!(getcwd(chemin, sizeof(chemin)) != NULL)) {perror("getcwd didn't work 1");} 
                 // Change le répertoire de travail vers le répertoire personnel de l'utilisateur
                 if (chdir(home_dir) != 0) {
                     // En cas d'erreur lors du changement de répertoire
@@ -99,13 +101,15 @@ void execute_internal_command(const char *command) {
             // Si on a des élément à la suite de la chaine
             const char * suite = getSuite(command+3);
             if(strcmp(suite,"-") == 0){ 
+
                     // Revenir dans le répertoire de travail précèdent 
-                if (chdir("..") != 0) {
+                if (chdir(chemin) != 0) {
                         perror("Erreur lors du changement de répertoire 1");
                         goto error;
                 }
             }
             else{
+                if (!(getcwd(chemin, sizeof(chemin)) != NULL)) {perror("getcwd didn't work 2");} 
                 if (chdir(suite) != 0) {
                     perror("Erreur lors du changement de répertoire 2");
                     goto error;
