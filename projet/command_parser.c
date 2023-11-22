@@ -6,10 +6,11 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 #define PATH_MAX 512
 
-int valeur_retour=1;
+int valeur_retour=0;
 char chemin[1024];
 bool is_internal_command(const char *command) {
     return (strcmp(command, "pwd") == 0 || 
@@ -70,7 +71,7 @@ void execute_internal_command(const char *command) {
             printf("%s\n", current_dir);
         } else {
             // En cas d'erreur lors de l'obtention du répertoire
-            valeur_retour = 0;
+            goto error;
             perror("getcwd");
         }
     } 
@@ -86,11 +87,9 @@ void execute_internal_command(const char *command) {
                 if (!(getcwd(chemin, sizeof(chemin)) != NULL)) {perror("getcwd didn't work 1");} 
                 // Change le répertoire de travail vers le répertoire personnel de l'utilisateur
                 if (chdir(home_dir) != 0) {
+                    goto error;
                     // En cas d'erreur lors du changement de répertoire
                     perror("chdir");
-                }
-                else {
-                    printf("%s \n", home_dir);
                 }
             } else {
                 // Si le répertoire personnel n'est pas défini dans l'environnement
@@ -107,6 +106,7 @@ void execute_internal_command(const char *command) {
                         perror("Erreur lors du changement de répertoire 1");
                         goto error;
                 }
+
             }
             else{
                 if (!(getcwd(chemin, sizeof(chemin)) != NULL)) {perror("getcwd didn't work 2");} 
@@ -127,5 +127,7 @@ void execute_internal_command(const char *command) {
 
     valeur_retour = 0;
    
-    error : valeur_retour = 1;
+    error : if(errno){
+        valeur_retour = 1;
+    }
 }
