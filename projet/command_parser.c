@@ -12,6 +12,8 @@
 
 int valeur_retour=0;
 char chemin[1024];
+char ancien[1024];
+
 bool is_internal_command(const char *command) {
     return (strcmp(command, "pwd") == 0 || 
             strcmp(command, "cd") == 0 || 
@@ -61,25 +63,20 @@ void execute_internal_command(const char *command) {
 
     // Vérifie si la commande est "pwd"
     if (strcmp(command, "pwd") == 0) {
-       
         // Variable pour stocker le répertoire de travail courant
         char current_dir[PATH_MAX];
         
         // Obtient le répertoire de travail courant
         if (getcwd(current_dir, sizeof(current_dir)) != NULL) {
-            // Affiche le répertoire de travail courant
             printf("%s\n", current_dir);
         } else {
-            // En cas d'erreur lors de l'obtention du répertoire
             goto error;
             perror("getcwd");
         }
     } 
-    // Vérifie si la commande est "cd"
     else if (strncmp(command, "cd",2) == 0) {
         // Obtient le chemin du répertoire personnel de l'utilisateur
         const char *home_dir = getenv("HOME");
-        
         // Si on a encore un chemin à la suite 
         if(command[2] == '\0'){
             // Vérifie si le chemin est obtenu avec succès
@@ -100,13 +97,13 @@ void execute_internal_command(const char *command) {
             // Si on a des élément à la suite de la chaine
             const char * suite = getSuite(command+3);
             if(strcmp(suite,"-") == 0){ 
-
-                    // Revenir dans le répertoire de travail précèdent 
+                getcwd(ancien,sizeof(ancien));
+             
                 if (chdir(chemin) != 0) {
                         perror("Erreur lors du changement de répertoire 1");
                         goto error;
                 }
-
+                strcpy(chemin,ancien);
             }
             else{
                 if (!(getcwd(chemin, sizeof(chemin)) != NULL)) {perror("getcwd didn't work 2");} 
