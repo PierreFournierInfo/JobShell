@@ -7,13 +7,16 @@ all: jsh
 jsh: main.o prompt.o libcommand_parser.a 
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-main.o: main.c command_parser.h prompt.h
+main.o: main.c command_parser.h command_executor.h prompt.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-libcommand_parser.a: command_parser.o 
+libcommand_parser.a: command_parser.o command_executor.o 
 	ar rcs $@ $^
 
 command_parser.o: command_parser.c command_parser.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+command_executor.o: command_executor.c command_executor.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 prompt.o: prompt.c prompt.h
