@@ -79,7 +79,7 @@ void execute_internal_command(const char *command) {
         const char *home_dir = getenv("HOME");
         
         // Si on a encore un chemin à la suite 
-        if(command[3] == '\0'){
+        if(command[2] == '\0'){
             // Vérifie si le chemin est obtenu avec succès
             if (home_dir != NULL) {
                 // Change le répertoire de travail vers le répertoire personnel de l'utilisateur
@@ -98,16 +98,16 @@ void execute_internal_command(const char *command) {
         else{
             // Si on a des élément à la suite de la chaine
             const char * suite = getSuite(command+3);
-            if(strcmp(suite,"-") == 0){
-                    // Revenir en arrière d'un répertoire
+            if(strcmp(suite,"-") == 0){ 
+                    // Revenir dans le répertoire de travail précèdent 
                 if (chdir("..") != 0) {
-                        perror("Erreur lors du changement de répertoire");
+                        perror("Erreur lors du changement de répertoire 1");
                         goto error;
                 }
             }
             else{
                 if (chdir(suite) != 0) {
-                    perror("Erreur lors du changement de répertoire");
+                    perror("Erreur lors du changement de répertoire 2");
                     goto error;
                 }
             }

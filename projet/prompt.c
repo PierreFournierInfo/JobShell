@@ -53,6 +53,61 @@ char* update_prompt() {
     return res;
 }
 
+char** separerParEspaces(const char* chaine) {
+    if (chaine == NULL || *chaine == '\0') {
+        return NULL;
+    }
+
+    // Compter le nombre d'espaces pour déterminer la taille du tableau
+    int nombreEspaces = 0;
+    const char* it = chaine;
+    while (*it) {
+        if (*it == ' ') {
+            nombreEspaces++;
+            // Ignorer les espaces consécutifs
+            while (*(it + 1) == ' ') {it++;}
+        }
+        it++;
+    }
+
+    // Allouer de la mémoire pour le tableau de pointeurs
+    char** result = malloc((nombreEspaces + 1) * sizeof(char*));
+    if (result == NULL) {
+        fprintf(stderr, "Erreur lors de l'allocation de mémoire pour le tableau.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Remplir le tableau avec les mots
+    int index = 0;
+    it = chaine;
+    while (*it) {
+        if (*it != ' ') {
+            const char* debutMot = it;
+            // Trouver la fin du mot
+            while (*it && *it != ' ') {
+                it++;
+            }
+            // Allouer de la mémoire pour le mot
+            result[index] = malloc((it - debutMot + 1) * sizeof(char));
+            if (result[index] == NULL) {
+                fprintf(stderr, "Erreur lors de l'allocation de mémoire pour le mot.\n");
+                exit(EXIT_FAILURE);
+            }
+            // Copier le mot dans le tableau
+            strncpy(result[index], debutMot, it - debutMot);
+            result[index][it - debutMot] = '\0'; // Ajouter le caractère de fin de chaîne
+            index++;
+        } else {
+            it++;
+        }
+    }
+
+    // Marquer la fin du tableau avec NULL
+    result[index] = NULL;
+
+    return result;
+}
+
 
 int prompt() {
     rl_outstream = stderr;
@@ -73,7 +128,20 @@ int prompt() {
             free(input);  // Libère la mémoire rl_outstreamallouée pour la ligne de commande lue
          } 
          else {   
-            printf("erreur \n");
+            char** res = separerParEspaces(input);
+            // Affichage des résultats tests 
+            execute_command(res[0],res);
+            /*printf("Resultat pour la chaine p : [");
+            for (int i = 0; res[i] != NULL; i++) {
+                printf("\"%s\"", res[i]);
+                if (res[i + 1] != NULL) {
+                    printf(", ");
+                }
+                free(res[i]); // Libérer la mémoire allouée pour chaque mot
+            }
+            printf("]\n");
+            */
+
             free(input);  // Libère la mémoire allouée pour la ligne de commande lue
         }
     }
