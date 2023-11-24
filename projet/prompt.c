@@ -130,7 +130,7 @@ int prompt() {
          else {   
             char** res = separerParEspaces(input);
             // Affichage des résultats tests 
-            execute_command(res[0],res);
+            if(strlen(input)>0) execute_command(res[0],res);
             /*printf("Resultat pour la chaine p : [");
             for (int i = 0; res[i] != NULL; i++) {
                 printf("\"%s\"", res[i]);
