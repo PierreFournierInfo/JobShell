@@ -3,8 +3,9 @@
 #define COMMAND_PARSER_H
 
 #include <stdbool.h>
-extern 
-bool is_internal_command(const char *command);
+#include <stdlib.h>
+
+extern int valeur_de_retour;
 void execute_internal_command(const char *command);
 
 #endif // COMMAND_PARSER_H

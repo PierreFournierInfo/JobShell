@@ -10,16 +10,9 @@
 
 #define PATH_MAX 512
 
-int valeur_retour=0;
+int valeur_de_retour = 0;
 char chemin[1024];
 char ancien[1024];
-
-bool is_internal_command(const char *command) {
-    return (strcmp(command, "pwd") == 0 || 
-            strcmp(command, "cd") == 0 || 
-            strcmp(command, "?") == 0 ||
-            strcmp(command, "exit") == 0);
-}
 
 // Fonction pour vérifier l'existence d'un répertoire
 int directory_exists(const char *path) {
@@ -115,16 +108,23 @@ void execute_internal_command(const char *command) {
         }
     } 
     else if (strcmp(command, "?") == 0) {
-        printf("Dernière valeur de retour : %d \n" , valeur_retour);
+        printf("%d\n" , valeur_de_retour);
+        valeur_de_retour = 0;
     } 
-    else if (strcmp(command, "exit") == 0) {
-        // Vérifier les jobs en cour si il y a un souci
-        exit(valeur_retour);
+    else if (strncmp(command, "exit",4) == 0) {
+        // Vérifier les jobs en cour si il y a un souci (pour plus tard)
+        const char * suite = getSuite(command+5);
+        //printf("%s\n", suite);
+        if((suite[0]=='\0')) {
+            //printf("Valeur de retour %d \n",valeur_de_retour); 
+            exit(valeur_de_retour);}
+        else {
+            //printf("apres %c\n",suite[0]); 
+            exit(atoi(suite));
+        }
     }
 
-    valeur_retour = 0;
-   
     error : if(errno){
-        valeur_retour = 1;
+        valeur_de_retour = 1;
     }
 }
