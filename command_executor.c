@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include "command_parser.h"
 
 void execute_command(char *command, char *args[]) {
     pid_t pid = fork();
@@ -13,7 +14,7 @@ void execute_command(char *command, char *args[]) {
         exit(EXIT_FAILURE);
     } else if (pid == 0) {
         // Processus fils
-        execvp(command, args);
+        valeur_de_retour = execvp(command, args);
         perror("execvp");
         exit(EXIT_FAILURE);
     } else {
@@ -22,11 +23,13 @@ void execute_command(char *command, char *args[]) {
         waitpid(pid, &status, 0); // status sert à vérifier le resultat de l'état de processus du fils , 0 est l'option de comportement 
         // on utilise en général 0 pour une attente normal 
 
-        /*if (WIFEXITED(status)) {
-            printf("... exécution terminée\n");
-            exit(0);
+        if (WIFEXITED(status)) {
+            // Le processus fils s'est terminé normalement
+            valeur_de_retour = WEXITSTATUS(status);
+            //printf("Le processus fils s'est terminé avec le statut : %d\n", valeurProcessusFils);
         } else {
-            printf("... échec de l'exécution\n");
-        }*/
+            // Le processus fils ne s'est pas terminé normalement
+            //fprintf(stderr, "Le processus fils ne s'est pas terminé normalement.\n");
+        }
     }
 }
