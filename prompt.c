@@ -24,11 +24,12 @@ char* display() {
 
         if (buffer_length >= 30) {
             char* point = "...";
-            char* last_30_characters = buffer + (buffer_length - 30);
-            int l = strlen(point)+strlen(last_30_characters) + 1;
+            char* last_22_characters = buffer + (buffer_length - 22); // on compte la taille max avec les crochets et le $
+            int l = strlen(point)+strlen(last_22_characters) + 1;
             char* res = (char*) malloc(l);
-             if (res != NULL) {
-                snprintf(res, l, "%s%s", point, last_30_characters);
+            
+            if (res != NULL) {
+                snprintf(res, l, "%s%s", point, last_22_characters);
             }  
             return res;
         } else {
@@ -39,7 +40,7 @@ char* display() {
 }
 
 char* update_prompt() {
-    char* p = "\033[32m [0]\033[00m";
+    char* p = "\033[32m[0]\033[00m";
     char* d = display();
     char*fin="$ ";
     if(d == NULL) perror("Erreur dans prompt update");
@@ -114,16 +115,18 @@ int prompt() {
     while (1) {
         char* prompt = update_prompt();
         char *input = readline(prompt);  
-        if (!input) {
+        if (!input || input == NULL) {
+            exit(valeur_de_retour);
             break;  
         }
+
         add_history(input);  // Ajoute la commande à l'historique readline
 
         // Vérifie si la commande est une commande interne (pwd, cd, ?, exit)
         if (strcmp(input, "pwd") == 0 || 
             strncmp(input, "cd", 2) == 0 || 
             strcmp(input, "?") == 0 || 
-            strcmp(input, "exit") == 0) {
+            strncmp(input, "exit",4) == 0) {
             execute_internal_command(input); 
             free(input);  // Libère la mémoire rl_outstreamallouée pour la ligne de commande lue
          } 
@@ -131,17 +134,7 @@ int prompt() {
             char** res = separerParEspaces(input);
             // Affichage des résultats tests 
             if(strlen(input)>0) execute_command(res[0],res);
-            /*printf("Resultat pour la chaine p : [");
-            for (int i = 0; res[i] != NULL; i++) {
-                printf("\"%s\"", res[i]);
-                if (res[i + 1] != NULL) {
-                    printf(", ");
-                }
-                free(res[i]); // Libérer la mémoire allouée pour chaque mot
-            }
-            printf("]\n");
-            */
-
+            
             free(input);  // Libère la mémoire allouée pour la ligne de commande lue
         }
     }
