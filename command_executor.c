@@ -22,7 +22,7 @@ void execute_command(char *command, char *args[]) {
         // Processus parent
         int status;
         waitpid(pid, &status, 0); // status sert à vérifier le resultat de l'état de processus du fils , 0 est l'option de comportement 
-        // on utilise en général 0 pour une attente normal 
+        //Rappel : on utilise en général 0 pour une attente normal 
 
         if (WIFEXITED(status)) {
             // Le processus fils s'est terminé normalement

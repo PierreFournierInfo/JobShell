@@ -57,9 +57,7 @@ char* update_prompt() {
 }
 
 char** separerParEspaces(const char* chaine, int* taille) {
-    if (chaine == NULL || *chaine == '\0') {
-        return NULL;
-    }
+    if (chaine == NULL || *chaine == '\0') {return NULL;}
 
     // Compter le nombre d'espaces pour déterminer la taille du tableau
     int nombreEspaces = 0;
@@ -74,7 +72,7 @@ char** separerParEspaces(const char* chaine, int* taille) {
     }
 
     // Allouer de la mémoire pour le tableau de pointeurs
-    *taille = nombreEspaces + 2;
+    *taille = nombreEspaces + 2; // pour gérer les fins de mots avec ou sans espaces et pour avoir suffisamment de place
     char** result = malloc((nombreEspaces + 2) * sizeof(char*));
     if (result == NULL) {
         fprintf(stderr, "Erreur lors de l'allocation de mémoire pour le tableau.\n");
@@ -88,9 +86,7 @@ char** separerParEspaces(const char* chaine, int* taille) {
         if (*it != ' ') {
             const char* debutMot = it;
             // Trouver la fin du mot
-            while (*it && *it != ' ') {
-                it++;
-            }
+            while (*it && *it != ' ') {it++;}
             // Allouer de la mémoire pour le mot
             result[index] = malloc((it - debutMot + 1) * sizeof(char));
             if (result[index] == NULL) {
@@ -101,11 +97,11 @@ char** separerParEspaces(const char* chaine, int* taille) {
             strncpy(result[index], debutMot, it - debutMot);
             result[index][it - debutMot] = '\0'; // Ajouter le caractère de fin de chaîne
             index++;
-        } else {
+        }
+         else {
             it++;
         }
     }
-
     // Marquer la fin du tableau avec NULL
     result[index] = NULL;
 
@@ -117,40 +113,4 @@ void freeAll(char** lib,int t){
         free(lib[i]);
     }
     free(lib);
-}
-
-
-int prompt() {
-    rl_outstream = stderr;
-    while (1) {
-        char* prompt = update_prompt();
-        char *input = readline(prompt);
-        free(prompt);  
-        if (!input || input == NULL) {
-            exit(valeur_de_retour);
-            break;  
-        }
-
-        add_history(input);  // Ajoute la commande à l'historique readline
-
-        // Vérifie si la commande est une commande interne (pwd, cd, ?, exit)
-        if (strcmp(input, "pwd") == 0 || 
-            strncmp(input, "cd", 2) == 0 || 
-            strcmp(input, "?") == 0 || 
-            strncmp(input, "exit",4) == 0) {
-            execute_internal_command(input); 
-            free(input);  // Libère la mémoire rl_outstreamallouée pour la ligne de commande lue
-         } 
-         else {   
-            int taille=0;
-            char** res = separerParEspaces(input,&taille);
-            
-            // Affichage des résultats tests 
-            if(strlen(input)>0) execute_command(res[0],res);
-            freeAll(res,taille);
-
-            free(input);  // Libère la mémoire allouée pour la ligne de commande lue
-        }
-    }
-    return 0;
 }
