@@ -11,7 +11,7 @@
 #include <readline/history.h>
 
 char* display();
-char** separerParEspaces(const char* chaine);
+char** separerParEspaces(const char* chaine,int* taille);
 char* update_prompt();
 int prompt();
 char** diviserEnMots(const char* chaine);

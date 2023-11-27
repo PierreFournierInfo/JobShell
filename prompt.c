@@ -31,6 +31,7 @@ char* display() {
             if (res != NULL) {
                 snprintf(res, l, "%s%s", point, last_22_characters);
             }  
+            free(buffer);
             return res;
         } else {
             return buffer;
@@ -51,10 +52,11 @@ char* update_prompt() {
         // Utiliser snprintf pour concaténer les chaînes
         snprintf(res, i, "%s%s%s", p, d, fin);
     }    
+    free(d);
     return res;
 }
 
-char** separerParEspaces(const char* chaine) {
+char** separerParEspaces(const char* chaine, int* taille) {
     if (chaine == NULL || *chaine == '\0') {
         return NULL;
     }
@@ -72,7 +74,8 @@ char** separerParEspaces(const char* chaine) {
     }
 
     // Allouer de la mémoire pour le tableau de pointeurs
-    char** result = malloc((nombreEspaces + 1) * sizeof(char*));
+    *taille = nombreEspaces + 2;
+    char** result = malloc((nombreEspaces + 2) * sizeof(char*));
     if (result == NULL) {
         fprintf(stderr, "Erreur lors de l'allocation de mémoire pour le tableau.\n");
         exit(EXIT_FAILURE);
@@ -109,12 +112,20 @@ char** separerParEspaces(const char* chaine) {
     return result;
 }
 
+void freeAll(char** lib,int t){
+    for(int i=0; i<t-1;i++){
+        free(lib[i]);
+    }
+    free(lib);
+}
+
 
 int prompt() {
     rl_outstream = stderr;
     while (1) {
         char* prompt = update_prompt();
-        char *input = readline(prompt);  
+        char *input = readline(prompt);
+        free(prompt);  
         if (!input || input == NULL) {
             exit(valeur_de_retour);
             break;  
@@ -131,10 +142,13 @@ int prompt() {
             free(input);  // Libère la mémoire rl_outstreamallouée pour la ligne de commande lue
          } 
          else {   
-            char** res = separerParEspaces(input);
+            int taille=0;
+            char** res = separerParEspaces(input,&taille);
+            
             // Affichage des résultats tests 
             if(strlen(input)>0) execute_command(res[0],res);
-            
+            freeAll(res,taille);
+
             free(input);  // Libère la mémoire allouée pour la ligne de commande lue
         }
     }

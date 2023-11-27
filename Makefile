@@ -25,4 +25,8 @@ prompt.o: prompt.c prompt.h
 clean:
 	rm -f *.o *.a jsh
 
+
+valgrind: jsh
+	valgrind --leak-check=full ./jsh
+
 .PHONY: all clean
