@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <fcntl.h>
@@ -15,7 +16,7 @@ void execute_command(char *command, char *args[]) {
     } else if (pid == 0) {
         // Processus fils
         valeur_de_retour = execvp(command, args);
-        perror("execvp");
+        perror("bash");
         exit(EXIT_FAILURE);
     } else {
         // Processus parent
@@ -29,7 +30,8 @@ void execute_command(char *command, char *args[]) {
             //printf("Le processus fils s'est terminé avec le statut : %d\n", valeurProcessusFils);
         } else {
             // Le processus fils ne s'est pas terminé normalement
-            //fprintf(stderr, "Le processus fils ne s'est pas terminé normalement.\n");
+            fprintf(stderr, "Le processus fils ne s'est pas terminé normalement.\n");
         }
+
     }
 }
