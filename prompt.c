@@ -41,7 +41,8 @@ char* display() {
 }
 
 char* update_prompt() {
-    char* p = "\033[32m[0]\033[00m";
+    int x=0;
+    char* p = "\033[32m[%d]\033[00m";
     char* d = display();
     char*fin="$ ";
     if(d == NULL) perror("Erreur dans prompt update");
@@ -50,7 +51,10 @@ char* update_prompt() {
 
     if (res != NULL) {
         // Utiliser snprintf pour concaténer les chaînes
-        snprintf(res, i, "%s%s%s", p, d, fin);
+        //snprintf(res, i, "%s%s%s", p, d, fin);
+        snprintf(res, i, p, x);
+        strcat(res, d);
+        strcat(res, fin);
     }    
     free(d);
     return res;
