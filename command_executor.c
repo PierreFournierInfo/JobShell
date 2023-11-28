@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include "command_parser.h"
+#include "job_manager.h"
 
 void execute_command(char *command, char *args[]) {
     pid_t pid = fork();
@@ -15,8 +16,8 @@ void execute_command(char *command, char *args[]) {
         exit(EXIT_FAILURE);
     } else if (pid == 0) {
         // Processus fils
-        valeur_de_retour = execvp(command, args);
-        perror("bash");
+        valeur_de_retour = execvp(command, args); // execution de commande sans avoir besoin du path
+        perror("bash ");
         exit(EXIT_FAILURE);
     } else {
         // Processus parent
@@ -24,13 +25,16 @@ void execute_command(char *command, char *args[]) {
         waitpid(pid, &status, 0); // status sert à vérifier le resultat de l'état de processus du fils , 0 est l'option de comportement 
         //Rappel : on utilise en général 0 pour une attente normal 
 
+        // Créer un job avec les informations nécessaires
+        Job* new_job = create_job(pid, command);
+        
+        // Mise à jour de l'état du job
         if (WIFEXITED(status)) {
-            // Le processus fils s'est terminé normalement
-            valeur_de_retour = WEXITSTATUS(status);
-            //printf("Le processus fils s'est terminé avec le statut : %d\n", valeurProcessusFils);
-        } else {
-            // Le processus fils ne s'est pas terminé normalement
-            fprintf(stderr, "Le processus fils ne s'est pas terminé normalement.\n");
+            update_job_status(pid, WEXITSTATUS(status));
+        } else if (WIFSTOPPED(status)) {
+            update_job_status(pid, -1); // Vous pouvez utiliser -1 ou un autre code pour les états arrêtés
+        } else if (WIFSIGNALED(status)) {
+            update_job_status(pid, WTERMSIG(status));
         }
 
     }
