@@ -2,11 +2,14 @@
 #include "command_parser.h"
 #include "prompt.h"
 #include "command_executor.h"
+#include "prompt.h"
+#include "job_manager.h"
 
 int main() {
-   rl_outstream = stderr;
-    while (1) {
+
+ while (1) {
         char* prompt = update_prompt();
+        rl_outstream = stderr;
         char *input = readline(prompt);
         free(prompt);  
         if (!input || input == NULL) {
@@ -24,6 +27,9 @@ int main() {
             execute_internal_command(input); 
             free(input);  // Libère la mémoire rl_outstreamallouée pour la ligne de commande lue
          } 
+         else if (strncmp(input, "jobs",4)==0){
+            print_jobs();
+         }
          else {   
             int taille=0;
             char** res = separerParEspaces(input,&taille);
