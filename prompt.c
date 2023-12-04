@@ -1,5 +1,6 @@
 #include "prompt.h"
 #include "command_parser.h"
+#include "redirection.c"
 #include "command_executor.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -111,6 +112,17 @@ char** separerParEspaces(const char* chaine, int* taille) {
 void freeAll(char** lib,int t){
     for(int i=0; i<t-1;i++){
         free(lib[i]);
-    }
+        }
     free(lib);
 }
+
+bool redirection_verif(char* input){
+    for(size_t i=0;i<strlen(input);i++){
+        if(input[i]=='|') return true;
+        if(input[i]=='<') return true;
+        if(input[i]=='>') return true;
+    }
+    return false;
+}
+
+
