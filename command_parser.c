@@ -42,7 +42,7 @@ void execute_cd(const char *command) {
     }
 }
 
-// Fonction pour récupérer la suite en ignorant les espaces
+    // Fonction pour récupérer la suite en ignorant les espaces
     const char *getSuite(const char *chaine) {
         while (*chaine != '\0' && *chaine == ' ') {
             chaine++; // Ignorer les espaces
