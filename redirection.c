@@ -4,68 +4,72 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <stdbool.h>
+#include <string.h>
 
-void stringToCharArray(const char* inputString) {
-    char* tab[50];
-    // Vérifier que les pointeurs ne sont pas nuls
-    if (inputString == NULL || tab == NULL) {
-        printf("Erreur : Pointeur nul.\n");
-        return;
+size_t tailleTableauChar(char **tableau) {
+    size_t taille = 0;
+
+    while (tableau[taille] != NULL) {
+        taille++;
     }
 
-    // Copier chaque caractère dans le tableau de caractères
-    int i = 0;
-    while (inputString[i] != '\0') {
-        tab[i] = inputString[i];
-        i++;
-    }
-
-    // Ajouter le caractère nul pour terminer le tableau
-    tab[i] = '\0';
+    return taille;
+}
+bool verif_fic(const char *fic){
+        struct stat file_stat;
+    return stat(fic, &file_stat) == 0 && S_ISREG(file_stat.st_mode);
 }
 
+void redirect(char** tab){
+    for(size_t i=0;i<tailleTableauChar(tab)-1;i++){
 
-void redirect(char* tab){
-     char **mots = separerChaine(tab, delimiteur, &nombreDeMots);
-        
         if(strcmp(tab[i], "<") == 0){
-            int fd = open("nom_du_fichier.txt",O_CREAT|O_WRONLY);
+            if(verif_fic(tab[i+1])==true){
+                int fd = open(tab[i+1],O_RDONLY);
     
-            if (fd < 0) {
-                perror("Erreur lors de l'ouverture du fichier");
-                exit(EXIT_FAILURE);
-            }
+                if (fd < 0) {
+                    perror("Erreur lors de l'ouverture du fichier");
+                    //exit(EXIT_FAILURE);
+                }
 
-            // Rediriger l'entrée standard vers le fichier
-            if(dup2(fd, STDIN_FILENO) == NULL) {
-                perror("Erreur lors de la redirection de l'entrée standard");
-                exit(EXIT_FAILURE);
+                // Rediriger l'entrée standard vers le fichier
+                if(dup2(fd, STDIN_FILENO) == -1) {
+                    perror("Erreur lors de la redirection de l'entrée standard");
+                   // exit(EXIT_FAILURE);
+                }
+            }else{
+                perror(strcat(tab[i+1],": Aucun fichier ou dossier de ce type"));
             }
+            
         }
         
-        if(strcmp(tab[i], ">") == 0){
-            // Ouvrir ou créer le fichier en écriture seulement, en ajoutant au contenu existant
-            int fd = open("fic", O_WRONLY | O_CREAT | O_APPEND, 0644);
+        if((strcmp(tab[i], ">") == 0 && strcmp(tab[i+1], ">") != 0 )||
+            (strcmp(tab[i], ">") == 0 && strcmp(tab[i+1], "|") != 0)){
+            
+                // Ouvrir ou créer le fichier en écriture seulement, en ajoutant au contenu existant
+                int fd = open(tab[i+1], O_WRONLY | O_CREAT | O_APPEND|O_EXCL, 0666);
 
-            if (fd == -1) {
-                perror("Erreur lors de l'ouverture ou de la création du fichier");
-                exit(EXIT_FAILURE);
-            }
+                if (fd == -1) {
+                    perror("Erreur lors de l'ouverture ou de la création du fichier");
+                    exit(EXIT_FAILURE);
+                }
 
-            // Rediriger la sortie standard vers le fichier
-            if (dup2(fd, STDOUT_FILENO) == -1) {
-                perror("Erreur lors de la redirection de la sortie standard");
-                exit(EXIT_FAILURE);
-            }
+                // Rediriger la sortie standard vers le fichier
+                if (dup2(fd, STDOUT_FILENO) == -1) {
+                    perror("Erreur lors de la redirection de la sortie standard");
+                    exit(EXIT_FAILURE);
+                }
 
-            // Fermer le descripteur de fichier supplémentaire
-            close(fd);
+                // Fermer le descripteur de fichier supplémentaire
+                close(fd);
         }
         
         if(strcmp(tab[i], ">") == 0 && strcmp(tab[i+1], "|") == 0){
 
-            // Ouvrir ou créer le fichier en écriture seulement, en écrasant le contenu existant
-            int fd = open("fic", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            // Ouvrir ou créer le fichier en écriture seulement, en écrasant le contenu existant 
+            int fd = open(tab[i+1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
 
             if (fd == -1) {
                 perror("Erreur lors de l'ouverture ou de la création du fichier");
@@ -85,7 +89,7 @@ void redirect(char* tab){
         if(strcmp(tab[i], ">") == 0 && strcmp(tab[i+1], ">") == 0){
 
             // Ouvrir ou créer le fichier en écriture seulement, en concaténant le contenu existant
-            int fd = open("fic", O_WRONLY | O_CREAT | O_APPEND, 0644);
+            int fd = open(tab[i+2], O_WRONLY | O_CREAT | O_APPEND, 0666);
 
             if (fd == -1) {
                 perror("Erreur lors de l'ouverture ou de la création du fichier");
@@ -103,11 +107,65 @@ void redirect(char* tab){
         }
         
         if(strcmp(tab[i], "2") == 0 && strcmp(tab[i+1], ">") == 0){
+            if(verif_fic(tab[i+1])==false){
+                 // Ouvrir ou créer le fichier en écriture seulement, en ajoutant au contenu existant
+                int fd = open(tab[i+2], O_WRONLY | O_CREAT | O_APPEND, 0666);
+
+                if (fd == -1) {
+                    perror("Erreur lors de l'ouverture ou de la création du fichier");
+                    exit(EXIT_FAILURE);
+                }
+
+                // Rediriger la sortie erreur vers le fichier
+                if (dup2(fd, STDERR_FILENO) == -1) {
+                    perror("Erreur lors de la redirection de la sortie standard");
+                    exit(EXIT_FAILURE);
+                }
+
+                // Fermer le descripteur de fichier supplémentaire
+                close(fd);
+            }else{
+                perror("Erreur le fichier existe deja");
+                exit(EXIT_FAILURE);
+            }
         }
         
         if(strcmp(tab[i], "2") == 0 && strcmp(tab[i+1], ">") == 0 && strcmp(tab[i+2], ">") == 0){
+            // Ouvrir ou créer le fichier en écriture seulement, en écrasant le contenu existant 
+            int fd = open(tab[i+3], O_WRONLY | O_CREAT | O_TRUNC, 0666);
+
+            if (fd == -1) {
+                perror("Erreur lors de l'ouverture ou de la création du fichier");
+                exit(EXIT_FAILURE);
+            }
+
+            // Rediriger la sortie erreur standard vers le fichier
+            if (dup2(fd, STDERR_FILENO) == -1) {
+                perror("Erreur lors de la redirection de la sortie standard");
+                exit(EXIT_FAILURE);
+            }
+
+            // Fermer le descripteur de fichier supplémentaire
+            close(fd);
         }
         
         if(strcmp(tab[i], "2") == 0 && strcmp(tab[i+1], ">") == 0 && strcmp(tab[i+2], "|") == 0){
+            // Ouvrir ou créer le fichier en écriture seulement, en concaténant le contenu existant
+            int fd = open(tab[i+3], O_WRONLY | O_CREAT | O_APPEND, 0666);
+
+            if (fd == -1) {
+                perror("Erreur lors de l'ouverture ou de la création du fichier");
+                exit(EXIT_FAILURE);
+            }
+
+            // Rediriger la sortie erreur standard vers le fichier
+            if (dup2(fd, STDERR_FILENO) == -1) {
+                perror("Erreur lors de la redirection de la sortie standard");
+                exit(EXIT_FAILURE);
+            }
+
+            // Fermer le descripteur de fichier supplémentaire
+            close(fd);
         }
+    }
 }

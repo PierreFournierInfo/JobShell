@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "stdlib.h": "c",
+        "command_executor.h": "c",
+        "redirection.h": "c"
+    }
+}

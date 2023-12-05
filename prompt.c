@@ -1,6 +1,6 @@
 #include "prompt.h"
 #include "command_parser.h"
-#include "redirection.c"
+#include "redirection.h"
 #include "command_executor.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -119,7 +119,9 @@ void freeAll(char** lib,int t){
 bool redirection_verif(char* input){
     for(size_t i=0;i<strlen(input);i++){
         if(input[i]=='|') return true;
-        if(input[i]=='<') return true;
+        if(input[i]=='<'){
+            return true;
+        } 
         if(input[i]=='>') return true;
     }
     return false;
