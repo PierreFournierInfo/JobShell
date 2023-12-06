@@ -11,17 +11,20 @@ int main() {
         char *input = readline(prompt);
         free(prompt);  
         if (!input || input == NULL) {
+            printf(" test break ma gueule ");
             exit(valeur_de_retour);
             break;  
         }
 
         add_history(input);  // Ajoute < ala commande à l'historique readline
-        printf(" 12 \n");
+        //printf(" test avant redirection_verif \n");
         if(redirection_verif(input)){
             int taille=0;
             char** res = separerParEspaces(input,&taille);
-            redirect(res);
-            char** res2=malloc(sizeof res);
+            printf("OK \n");
+            command_r(res);
+            printf("ok1\n");
+            /*char** res2=malloc(sizeof res);
             for(size_t i=0;i<tailleTableauChar(res)-1;i++){
                 if(strcmp("|",res[i])==0 ||
                     strcmp("<",res[i])==0 ||
@@ -43,7 +46,7 @@ int main() {
                 free(res2);
                 
                 free(res);
-            }
+            }*/
             
         // Vérifie si la commande est une commande interne (pwd, cd, ?, exit)
         }else if(strcmp(input, "pwd") == 0 || 
@@ -54,14 +57,15 @@ int main() {
             free(input);  // Libère la mémoire rl_outstreamallouée pour la ligne de commande lue
          } 
          else { 
-            printf("test input %s",input); 
-            printf("%s\n",input); 
-            int taille=0;
-            char** res = separerParEspaces(input,&taille);
+        
+                printf("test input %s \n",input); 
+                int taille=0;
+                char** res = separerParEspaces(input,&taille);
             
-            // Affichage des résultats tests 
-            if(strlen(input)>0) execute_command(res[0],res);
-            freeAll(res,taille);
+                // Affichage des résultats tests 
+                if(strlen(input)>0) execute_command(res[0],res);
+                freeAll(res,taille);
+          
 
             free(input);  // Libère la mémoire allouée pour la ligne de commande lue
         }

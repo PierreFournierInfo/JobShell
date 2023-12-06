@@ -10,8 +10,8 @@
 #include <sys/stat.h>
 #include <stdbool.h>
 
-
+void command_r(char** res);
 size_t tailleTableauChar(char **tableau);
 bool verif_fic(const char *fic);
-void redirect(char** tab);
+void redirect(char** res, int* pipefd, pid_t child_pid );
 #endif 

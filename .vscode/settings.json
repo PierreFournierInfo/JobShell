@@ -2,6 +2,7 @@
     "files.associations": {
         "stdlib.h": "c",
         "command_executor.h": "c",
-        "redirection.h": "c"
+        "redirection.h": "c",
+        "stat.h": "c"
     }
 }
