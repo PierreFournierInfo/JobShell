@@ -27,10 +27,9 @@ void execute_command(char *command, char *args[]) {
 
         // Créer un job avec les informations nécessaires
         create_job(pid, command);
-        
-        // Mise à jour de l'état du job
+
+         // Mise à jour de l'état du job
         if (WIFEXITED(status)) {
-            valeur_de_retour = WEXITSTATUS(status);
             update_job_status(pid, WEXITSTATUS(status));
         } else if (WIFSTOPPED(status)) {
             update_job_status(pid, -1); // Vous pouvez utiliser -1 ou un autre code pour les états arrêtés
