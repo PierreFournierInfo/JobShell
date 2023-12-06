@@ -19,6 +19,8 @@ command_parser.o: command_parser.c command_parser.h
 command_executor.o: command_executor.c command_executor.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+signal_handler.o: 
+
 prompt.o: prompt.c prompt.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
