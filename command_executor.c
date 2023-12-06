@@ -16,7 +16,7 @@ void execute_command(char *command, char *args[]) {
     } else if (pid == 0) {
         // Processus fils
         valeur_de_retour = execvp(command, args);
-        printf("test erreur /n");
+        printf("test erreur \n");
         perror("bash");
         exit(EXIT_FAILURE);
     } else {

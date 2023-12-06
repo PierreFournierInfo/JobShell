@@ -16,10 +16,11 @@ int main() {
         }
 
         add_history(input);  // Ajoute < ala commande à l'historique readline
+        printf(" 12 \n");
         if(redirection_verif(input)){
             int taille=0;
             char** res = separerParEspaces(input,&taille);
-           redirect(res);
+            redirect(res);
             char** res2=malloc(sizeof res);
             for(size_t i=0;i<tailleTableauChar(res)-1;i++){
                 if(strcmp("|",res[i])==0 ||
@@ -34,14 +35,13 @@ int main() {
             strncmp(res[0], "exit",4) == 0) {  
                 printf(" test  %s\n ",res[0]);
                execute_internal_command(res[0]);
-                free(input);
                 free(res);
                 free(res2);
             }else{
                 printf(" test 2");
-                execute_command(res[0],res2);
+                execute_command(res[0],res);
                 free(res2);
-                free(input);
+                
                 free(res);
             }
             
@@ -53,7 +53,9 @@ int main() {
             execute_internal_command(input); 
             free(input);  // Libère la mémoire rl_outstreamallouée pour la ligne de commande lue
          } 
-         else {   
+         else { 
+            printf("test input %s",input); 
+            printf("%s\n",input); 
             int taille=0;
             char** res = separerParEspaces(input,&taille);
             

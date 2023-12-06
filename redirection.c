@@ -40,7 +40,7 @@ void redirect(char** tab){
                    // exit(EXIT_FAILURE);
                 }
             }else{
-                perror(strcat(tab[i+1],": Aucun fichier ou dossier de ce type"));
+               perror(strcat(tab[i+1],": Aucun fichier ou dossier de ce type"));
             }
             
         }
