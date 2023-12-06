@@ -19,38 +19,14 @@ int main() {
             break;  
         }
 
-        add_history(input);  // Ajoute < ala commande à l'historique readline
-        //printf(" test avant redirection_verif \n");
-        if(redirection_verif(input)){
+        add_history(input);  // Ajoute à la commande à l'historique readline
+         if(redirection_verif(input)){  // vérification de la possibilité de redirection 
             int taille=0;
             char** res = separerParEspaces(input,&taille);
-            printf("OK \n");
             command_r(res);
-            printf("ok1\n");
-            /*char** res2=malloc(sizeof res);
-            for(size_t i=0;i<tailleTableauChar(res)-1;i++){
-                if(strcmp("|",res[i])==0 ||
-                    strcmp("<",res[i])==0 ||
-                    strcmp(">",res[i])==0) break;
-                res2[i]=res[i];
-            }
-            // il est cense faire le pwd qu'on a écrit pas celui de executor
-            if(strcmp(res[0], "pwd") == 0 || 
-            strncmp(res[0], "cd", 2) == 0 || 
-            strcmp(res[0], "?") == 0 || 
-            strncmp(res[0], "exit",4) == 0) {  
-                printf(" test  %s\n ",res[0]);
-               execute_internal_command(res[0]);
-                free(res);
-                free(res2);
-            }else{
-                printf(" test 2");
-                execute_command(res[0],res);
-                free(res2);
-                
-                free(res);
-            }*/
-            
+            freeAll(res,taille);
+            free(input); 
+        }
         // Vérifie si la commande est une commande interne (pwd, cd, ?, exit)
         else if(strcmp(input, "pwd") == 0 || 
             strncmp(input, "cd", 2) == 0 || 
@@ -60,17 +36,13 @@ int main() {
             free(input);  // Libère la mémoire rl_outstreamallouée pour la ligne de commande lue
          } 
          else { 
-        
-                printf("test input %s \n",input); 
                 int taille=0;
                 char** res = separerParEspaces(input,&taille);
             
                 // Affichage des résultats tests 
                 if(strlen(input)>0) execute_command(res[0],res);
                 freeAll(res,taille);
-          
-
-            free(input);  // Libère la mémoire allouée pour la ligne de commande lue
+                free(input);  // Libère la mémoire allouée pour la ligne de commande lue
         }
     }
     return 0;
