@@ -14,7 +14,6 @@ int main() {
         char *input = readline(prompt);
         free(prompt);  
         if (!input || input == NULL) {
-            printf(" test break ma gueule ");
             exit(valeur_de_retour);
             break;  
         }

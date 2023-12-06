@@ -163,8 +163,10 @@ void redirect(char** res, int* pipefd, pid_t child_pid ){
                 close(fd);
                 break;
         }
-        else if((strcmp(res[i], ">") == 0 && strcmp(res[i+1], ">") != 0 )||
-            (strcmp(res[i], ">") == 0 && strcmp(res[i+1], "|") != 0)){
+        else if(strcmp(res[i], ">|")==0
+        //  == 0 && strcmp(res[i+1], ">") != 0 )||
+        //     (strcmp(res[i], ">") == 0 && strcmp(res[i+1], "|") != 0)
+            ){
             
                 // Ouvrir ou créer le fichier en écriture seulement, en ajoutant au contenu existant
                 int fd = open(res[i+1], O_WRONLY | O_CREAT | O_APPEND|O_EXCL, 0666);
@@ -206,8 +208,7 @@ void redirect(char** res, int* pipefd, pid_t child_pid ){
             break;
         }
         
-        else if(strcmp(res[i], ">") == 0 && strcmp(res[i+1], ">") == 0){
-
+        else if(strcmp(res[i], ">>")){
             // Ouvrir ou créer le fichier en écriture seulement, en concaténant le contenu existant
             int fd = open(res[i+2], O_WRONLY | O_CREAT | O_APPEND, 0666);
 
