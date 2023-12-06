@@ -4,6 +4,7 @@
 #include "command_executor.h"
 #include "prompt.h"
 #include "job_manager.h"
+#include"redirection.h"
 
 int main() {
 
@@ -17,20 +18,45 @@ int main() {
             break;  
         }
 
-        add_history(input);  // Ajoute la commande à l'historique readline
-
+        add_history(input);  // Ajoute < a la commande à l'historique readline
+        //printf(" 12 \n");
+        if(redirection_verif(input)){
+            int taille=0;
+            char** res = separerParEspaces(input,&taille);
+            redirect(res);
+            char** res2=malloc(sizeof res);
+            for(size_t i=0;i<tailleTableauChar(res)-1;i++){
+                if(strcmp("|",res[i])==0 ||
+                    strcmp("<",res[i])==0 ||
+                    strcmp(">",res[i])==0) break;
+                res2[i]=res[i];
+            }
+            // il est cense faire le pwd qu'on a écrit pas celui de executor
+            if(strcmp(res[0], "pwd") == 0 || 
+            strncmp(res[0], "cd", 2) == 0 || 
+            strcmp(res[0], "?") == 0 || 
+            strncmp(res[0], "exit",4) == 0) {  
+                printf(" test  %s\n ",res[0]);
+                execute_internal_command(res[0]);
+                free(res);
+                free(res2);
+            }else{
+                printf(" test 2");
+                //execute_command(res[0],res);
+                free(res2);
+                free(res);
+        }
         // Vérifie si la commande est une commande interne (pwd, cd, ?, exit)
-        if (strcmp(input, "pwd") == 0 || 
+        }else if(strcmp(input, "pwd") == 0 || 
             strncmp(input, "cd", 2) == 0 || 
             strcmp(input, "?") == 0 || 
             strncmp(input, "exit",4) == 0) {
             execute_internal_command(input); 
             free(input);  // Libère la mémoire rl_outstreamallouée pour la ligne de commande lue
          } 
-         else if (strncmp(input, "jobs",4)==0){
-            print_jobs();
-         }
-         else {   
+         else { 
+            printf("test input %s",input); 
+            printf("%s\n",input); 
             int taille=0;
             char** res = separerParEspaces(input,&taille);
             

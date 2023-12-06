@@ -55,6 +55,7 @@ void execute_internal_command(const char *command) {
 
     // Vérifie si la commande est "pwd"
     if (strcmp(command, "pwd") == 0) {
+        //printf("test pwd 2 \n");
         // Variable pour stocker le répertoire de travail courant
         char current_dir[PATH_MAX];
         
