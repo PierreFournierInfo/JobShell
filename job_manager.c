@@ -1,16 +1,10 @@
 #include "job_manager.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 
 // Exemple d'implémentation d'un module de gestion des tâches
 
 // Variables globales pour stocker les jobs
 static Job* jobs_list = NULL;
-static int job_count = 0;
+int job_count = 0;
 
 // Fonction pour initialiser le gestionnaire de tâches
 void initialize_job_manager() {
@@ -22,9 +16,10 @@ void initialize_job_manager() {
  Job* create_job(pid_t process_id, const char *command) {
     Job *new_job = malloc(sizeof(Job));
     if (new_job != NULL) {
-        new_job->id = job_count++/* assigner un ID unique */;
+        job_count++/* assigner un ID unique */;
+        new_job->id = job_count;
         new_job->process_id = process_id;
-        new_job->status = JOB_STATUS_RUNNING;
+        new_job->status = JOB_STATUS_STOPPED;
         new_job->exit_status = 0; // Initialiser le code de sortie
         // Vérification de notre allocation de mémoire 
         new_job -> command = (char *)malloc(strlen(command) + 1);

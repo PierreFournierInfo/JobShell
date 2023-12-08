@@ -2,10 +2,16 @@
 #define JOB_MANAGER_H
 
 #include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdbool.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 
 #define MAX_JOBS 100
 // Définir les états des jobs
+extern int job_count;
 enum JobStatus {
     JOB_STATUS_RUNNING,
     JOB_STATUS_STOPPED,
