@@ -17,6 +17,23 @@ size_t tailleTableauChar(char **tableau) {
     while (tableau[taille] != NULL) {taille++;}
     return taille;
 }
+char** before_com(char **res){
+    char** t=malloc(sizeof res);
+    for(size_t i=0;i<tailleTableauChar(res);i++){
+        if(strcmp(res[i],"<")==0 ||
+            strcmp(res[i],">")==0 ||
+            strcmp(res[i],">|")==0 ||
+            strcmp(res[i],">>")==0 ||
+            strcmp(res[i],"2>")==0 ||
+            strcmp(res[i],"2>|")==0 ||
+            strcmp(res[i],"2>>")==0){
+                break;
+            }
+        t[i]=res[i];
+    }
+    free(res);
+    return t;
+}
 
 bool verif_fic(const char *fic){
     struct stat file_stat;
@@ -77,7 +94,10 @@ void command_r(char** res){
         redirect(res,pipefd,child_pid); 
   
         // Exécuter la commande interne dans le processus enfant
-        execute_command(res[0],NULL);
+        printf("test commande");
+        char** utilisation = before_com(res);
+
+        execute_command(utilisation[0],utilisation);
         exit(EXIT_SUCCESS);
         }
         else {  // Code du processus parent
@@ -99,7 +119,6 @@ void command_r(char** res){
 /*------------------------- GESTION PRINCIPAL DES REDIRECTIONS ---------------------------------*/
 
 void redirect(char** res, int* pipefd, pid_t child_pid ){
-
         if (child_pid < 0) {
             perror("Erreur fork");
             exit(EXIT_FAILURE);
@@ -115,13 +134,14 @@ void redirect(char** res, int* pipefd, pid_t child_pid ){
 
         close(pipefd[1]);  // Fermer le descripteur de fichier supplémentaire
 
-    for (size_t i = 0; i < tailleTableauChar(res) - 1; i++) {
-        // printf("%s %s",res[i],res[i+1]);
+    for (size_t i = 0; i < tailleTableauChar(res) -1; i++) {
+         printf("%s %s \n",res[i],res[i+1]);
         if (strcmp(res[i], "<") == 0) {
+            printf("%s \n",res[i+1]);
             if (verif_fic(res[i + 1]) == true) {
-
+                    
                 int fd = open(res[i + 1], O_RDONLY);
-
+                    printf("test 2");
                 if (fd < 0) {
                     perror("Erreur lors de l'ouverture du fichier");
                     exit(EXIT_FAILURE);
@@ -144,7 +164,7 @@ void redirect(char** res, int* pipefd, pid_t child_pid ){
 
          else if(strcmp(res[i], ">") == 0){
                  // Ouvrir ou créer le fichier en écriture seulement, en ajoutant au contenu existant
-                 
+                 printf("%s 1\n",res[i+1]);
                 int fd = open(res[i+1],O_WRONLY | O_CREAT | O_EXCL |  O_APPEND, 0666);
                 if (fd == -1) {
                    // printf( "Erreur numéro %d \n", errno);
@@ -167,9 +187,9 @@ void redirect(char** res, int* pipefd, pid_t child_pid ){
         //  == 0 && strcmp(res[i+1], ">") != 0 )||
         //     (strcmp(res[i], ">") == 0 && strcmp(res[i+1], "|") != 0)
             ){
-            
+                printf("%s 2\n",res[i+1]);
                 // Ouvrir ou créer le fichier en écriture seulement, en ajoutant au contenu existant
-                int fd = open(res[i+1], O_WRONLY | O_CREAT | O_APPEND|O_EXCL, 0666);
+                int fd = open(res[i+1], O_WRONLY | O_CREAT |O_TRUNC, 0666);
 
                 if (fd == -1) {
                     perror("Erreur lors de l'ouverture ou de la création du fichier");
@@ -186,31 +206,10 @@ void redirect(char** res, int* pipefd, pid_t child_pid ){
                 close(fd);
                 break;
         }
-        
-        else if(strcmp(res[i], ">") == 0 && strcmp(res[i+1], "|") == 0){
-
-            // Ouvrir ou créer le fichier en écriture seulement, en écrasant le contenu existant 
-            int fd = open(res[i+1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
-
-            if (fd == -1) {
-                perror("Erreur lors de l'ouverture ou de la création du fichier");
-                exit(EXIT_FAILURE);
-            }
-
-            // Rediriger la sortie standard vers le fichier
-            if (dup2(fd, STDOUT_FILENO) == -1) {
-                perror("Erreur lors de la redirection de la sortie standard");
-                exit(EXIT_FAILURE);
-            }
-
-            // Fermer le descripteur de fichier supplémentaire
-            close(fd);
-            break;
-        }
-        
-        else if(strcmp(res[i], ">>")){
+        else if(strcmp(res[i], ">>")==0){
             // Ouvrir ou créer le fichier en écriture seulement, en concaténant le contenu existant
-            int fd = open(res[i+2], O_WRONLY | O_CREAT | O_APPEND, 0666);
+            printf("%s 4\n",res[i+1]);
+            int fd = open(res[i+1], O_WRONLY | O_CREAT | O_APPEND, 0666);
 
             if (fd == -1) {
                 perror("Erreur lors de l'ouverture ou de la création du fichier");
@@ -228,10 +227,10 @@ void redirect(char** res, int* pipefd, pid_t child_pid ){
             break;
         }
         
-        else if(strcmp(res[i], "2") == 0 && strcmp(res[i+1], ">") == 0){
-            if(verif_fic(res[i+1])==false){
+        else if(strcmp(res[i], "2>") == 0){
                  // Ouvrir ou créer le fichier en écriture seulement, en ajoutant au contenu existant
-                int fd = open(res[i+2], O_WRONLY | O_CREAT | O_APPEND, 0666);
+                printf("%s 6\n",res[i+1]);
+                int fd = open(res[i+1], O_WRONLY | O_CREAT | O_APPEND | O_EXCL, 0666);
 
                 if (fd == -1) {
                     perror("Erreur lors de l'ouverture ou de la création du fichier");
@@ -247,15 +246,12 @@ void redirect(char** res, int* pipefd, pid_t child_pid ){
                 // Fermer le descripteur de fichier supplémentaire
                 close(fd);
                 break;
-            }else{
-                perror("Erreur le fichier existe deja");
-                exit(EXIT_FAILURE);
-            }
         }
         
-        if(strcmp(res[i], "2") == 0 && strcmp(res[i+1], ">") == 0 && strcmp(res[i+2], ">") == 0){
+        else if(strcmp(res[i], "2>>") == 0){
             // Ouvrir ou créer le fichier en écriture seulement, en écrasant le contenu existant 
-            int fd = open(res[i+3], O_WRONLY | O_CREAT | O_TRUNC, 0666);
+            printf("%s 7\n",res[i+1]);
+            int fd = open(res[i+1], O_WRONLY | O_CREAT | O_APPEND, 0666);
 
             if (fd == -1) {
                 perror("Erreur lors de l'ouverture ou de la création du fichier");
@@ -273,9 +269,10 @@ void redirect(char** res, int* pipefd, pid_t child_pid ){
             break;
         }
         
-        if(strcmp(res[i], "2") == 0 && strcmp(res[i+1], ">") == 0 && strcmp(res[i+2], "|") == 0){
+        else if(strcmp(res[i], "2>|") == 0){
             // Ouvrir ou créer le fichier en écriture seulement, en concaténant le contenu existant
-            int fd = open(res[i+3], O_WRONLY | O_CREAT | O_APPEND, 0666);
+            printf("%s 8\n",res[i+1]);
+            int fd = open(res[i+1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
 
             if (fd == -1) {
                 perror("Erreur lors de l'ouverture ou de la création du fichier");
