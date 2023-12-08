@@ -94,7 +94,7 @@ void command_r(char** res){
         redirect(res,pipefd,child_pid); 
   
         // Exécuter la commande interne dans le processus enfant
-        printf("test commande");
+        //printf("test commande");
         char** utilisation = before_com(res);
 
         execute_command(utilisation[0],utilisation);
@@ -135,13 +135,13 @@ void redirect(char** res, int* pipefd, pid_t child_pid ){
         close(pipefd[1]);  // Fermer le descripteur de fichier supplémentaire
 
     for (size_t i = 0; i < tailleTableauChar(res) -1; i++) {
-         printf("%s %s \n",res[i],res[i+1]);
+         //printf("%s %s \n",res[i],res[i+1]);
         if (strcmp(res[i], "<") == 0) {
-            printf("%s \n",res[i+1]);
+            //printf("%s \n",res[i+1]);
             if (verif_fic(res[i + 1]) == true) {
                     
                 int fd = open(res[i + 1], O_RDONLY);
-                    printf("test 2");
+                    //printf("test 2");
                 if (fd < 0) {
                     perror("Erreur lors de l'ouverture du fichier");
                     exit(EXIT_FAILURE);
@@ -164,7 +164,7 @@ void redirect(char** res, int* pipefd, pid_t child_pid ){
 
          else if(strcmp(res[i], ">") == 0){
                  // Ouvrir ou créer le fichier en écriture seulement, en ajoutant au contenu existant
-                 printf("%s 1\n",res[i+1]);
+                 //printf("%s 1\n",res[i+1]);
                 int fd = open(res[i+1],O_WRONLY | O_CREAT | O_EXCL |  O_APPEND, 0666);
                 if (fd == -1) {
                    // printf( "Erreur numéro %d \n", errno);
@@ -187,7 +187,7 @@ void redirect(char** res, int* pipefd, pid_t child_pid ){
         //  == 0 && strcmp(res[i+1], ">") != 0 )||
         //     (strcmp(res[i], ">") == 0 && strcmp(res[i+1], "|") != 0)
             ){
-                printf("%s 2\n",res[i+1]);
+                //printf("%s 2\n",res[i+1]);
                 // Ouvrir ou créer le fichier en écriture seulement, en ajoutant au contenu existant
                 int fd = open(res[i+1], O_WRONLY | O_CREAT |O_TRUNC, 0666);
 
@@ -208,7 +208,7 @@ void redirect(char** res, int* pipefd, pid_t child_pid ){
         }
         else if(strcmp(res[i], ">>")==0){
             // Ouvrir ou créer le fichier en écriture seulement, en concaténant le contenu existant
-            printf("%s 4\n",res[i+1]);
+            //printf("%s 4\n",res[i+1]);
             int fd = open(res[i+1], O_WRONLY | O_CREAT | O_APPEND, 0666);
 
             if (fd == -1) {
@@ -229,7 +229,7 @@ void redirect(char** res, int* pipefd, pid_t child_pid ){
         
         else if(strcmp(res[i], "2>") == 0){
                  // Ouvrir ou créer le fichier en écriture seulement, en ajoutant au contenu existant
-                printf("%s 6\n",res[i+1]);
+                //printf("%s 6\n",res[i+1]);
                 int fd = open(res[i+1], O_WRONLY | O_CREAT | O_APPEND | O_EXCL, 0666);
 
                 if (fd == -1) {
@@ -250,7 +250,7 @@ void redirect(char** res, int* pipefd, pid_t child_pid ){
         
         else if(strcmp(res[i], "2>>") == 0){
             // Ouvrir ou créer le fichier en écriture seulement, en écrasant le contenu existant 
-            printf("%s 7\n",res[i+1]);
+            //printf("%s 7\n",res[i+1]);
             int fd = open(res[i+1], O_WRONLY | O_CREAT | O_APPEND, 0666);
 
             if (fd == -1) {
@@ -271,7 +271,7 @@ void redirect(char** res, int* pipefd, pid_t child_pid ){
         
         else if(strcmp(res[i], "2>|") == 0){
             // Ouvrir ou créer le fichier en écriture seulement, en concaténant le contenu existant
-            printf("%s 8\n",res[i+1]);
+            //printf("%s 8\n",res[i+1]);
             int fd = open(res[i+1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
 
             if (fd == -1) {
