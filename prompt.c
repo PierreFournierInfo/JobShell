@@ -2,6 +2,7 @@
 #include "command_parser.h"
 #include "redirection.h"
 #include "command_executor.h"
+#include "job_manager.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -42,7 +43,7 @@ char* display() {
 }
 
 char* update_prompt() {
-    int x=0;
+    int x=job_count;
     char* p = "\033[32m[%d]\033[00m";
     char* d = display();
     char*fin="$ ";

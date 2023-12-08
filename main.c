@@ -26,6 +26,10 @@ int main() {
             freeAll(res,taille);
             free(input); 
         }
+        // Jobs
+        else if(strcmp(input,"jobs")==0){
+            print_jobs();
+        }
         // Vérifie si la commande est une commande interne (pwd, cd, ?, exit)
         else if(strcmp(input, "pwd") == 0 || 
             strncmp(input, "cd", 2) == 0 || 
