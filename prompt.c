@@ -1,15 +1,4 @@
 #include "prompt.h"
-#include "command_parser.h"
-#include "redirection.h"
-#include "command_executor.h"
-#include "job_manager.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
-#include <readline/readline.h>
-#include <readline/history.h>
 
 #define MAX_PROMPT_LEN 30
 

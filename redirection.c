@@ -1,22 +1,11 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <stdbool.h>
-#include <string.h>
-#include "command_executor.h"
-#include "command_parser.h"
 #include "redirection.h"
-#include <errno.h>
 
 size_t tailleTableauChar(char **tableau) {
     size_t taille = 0;
     while (tableau[taille] != NULL) {taille++;}
     return taille;
 }
+
 char** before_com(char **res){
     char** t=malloc(sizeof res);
     for(size_t i=0;i<tailleTableauChar(res);i++){

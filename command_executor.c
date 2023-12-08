@@ -1,14 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <fcntl.h>
-#include <string.h>
-#include <signal.h>
-#include "command_parser.h"
-#include "job_manager.h"
+#include "command_executor.h"
 
 void execute_command(char *command, char *args[]) {
     int background = 0;  // Variable pour indiquer s'il s'agit d'un processus en arrière-plan
@@ -40,6 +30,7 @@ void execute_command(char *command, char *args[]) {
         }
 
         valeur_de_retour = execvp(command, args);
+        
         perror("JSH ");
         exit(EXIT_FAILURE);
     } else {
@@ -64,6 +55,8 @@ void execute_command(char *command, char *args[]) {
                 perror("Le processus fils ne s'est pas terminé normalement.\n");
             }
         } else {
+            int status;
+            waitpid(pid, &status, WNOHANG);
             // Processus en arrière-plan, ne pas attendre
             create_job(pid, command);   
             printf("[%d] %s en arrière-plan\n", pid, command);

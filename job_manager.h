@@ -1,7 +1,9 @@
 #ifndef JOB_MANAGER_H
 #define JOB_MANAGER_H
 
+#include <signal.h>
 #include <stdbool.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -9,7 +11,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#define MAX_JOBS 100
+#define MAX_JOBS 512
 // Définir les états des jobs
 extern int job_count;
 enum JobStatus {
@@ -36,5 +38,11 @@ void update_job_status(pid_t process_id, enum JobStatus new_status);
 void remove_completed_jobs();
 void print_jobs();
 void free_jobs();
+enum JobStatus check_job_status(pid_t process_id);
+void update_all_jobs();
+void bg_command(const char *job_id_str);
+void fg_command(const char *job_id_str);
+Job *find_job_by_id(int job_id);
+void handle_sigchld(int signo) ;
 
 #endif  // JOB_MANAGER_H

@@ -8,6 +8,10 @@
 
 int main() {
 
+// Gestion pour les jobs 
+ initialize_job_manager();
+ signal(SIGCHLD, handle_sigchld);
+ 
  while (1) {
         char* prompt = update_prompt();
         rl_outstream = stderr;
@@ -26,9 +30,21 @@ int main() {
             freeAll(res,taille);
             free(input); 
         }
-        // Jobs
+        // Jobs sans option pour le moment 
         else if(strcmp(input,"jobs")==0){
             print_jobs();
+            free(input);
+        }
+        //bg ou fg
+        else if(strncmp(input,"bg",2)==0 || strncmp(input,"fg",2)==0){
+            int taille = 0;
+            char** res = separerParEspaces(input,&taille);
+            //printf("bg fg :  %s \n", res[1]);
+            if(strncmp(input,"bg",2)==0) bg_command(res[1]);
+            else fg_command(res[1]);
+
+            freeAll(res,taille);
+            free(input);
         }
         // Vérifie si la commande est une commande interne (pwd, cd, ?, exit)
         else if(strcmp(input, "pwd") == 0 || 

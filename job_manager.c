@@ -1,14 +1,17 @@
+#include <signal.h>
 #include "job_manager.h"
 
 // Exemple d'implémentation d'un module de gestion des tâches
 
 // Variables globales pour stocker les jobs
-static Job* jobs_list = NULL;
+Job* jobs_list = NULL;
 int job_count = 0;
 
 // Fonction pour initialiser le gestionnaire de tâches
 void initialize_job_manager() {
     jobs_list = NULL;
+    // Mettre en place le gestionnaire de signal pour SIGCHLD
+    signal(SIGCHLD, handle_sigchld);
     job_count = 0;
 }
 
@@ -19,7 +22,7 @@ void initialize_job_manager() {
         job_count++/* assigner un ID unique */;
         new_job->id = job_count;
         new_job->process_id = process_id;
-        new_job->status = JOB_STATUS_STOPPED;
+        new_job->status = JOB_STATUS_RUNNING;
         new_job->exit_status = 0; // Initialiser le code de sortie
         // Vérification de notre allocation de mémoire 
         new_job -> command = (char *)malloc(strlen(command) + 1);
@@ -48,6 +51,30 @@ void add_job( Job *job) {
     }
 }
 
+// Fonction pour vérifier l'état d'un job à partir de son PID
+enum JobStatus check_job_status(pid_t process_id) {
+    int status;
+    pid_t result = waitpid(process_id, &status, WNOHANG);
+
+    if (result == 0) {
+        // Le processus est toujours en cours d'exécution
+        printf("Running job\n");
+        return JOB_STATUS_RUNNING;
+    } else if (result > 0) {
+        // Le processus s'est terminé normalement
+        if (WIFEXITED(status)) {
+            return JOB_STATUS_DONE;
+        } else {
+            // Le processus s'est terminé en raison d'un signal
+            return JOB_STATUS_DONE;  // ou un autre statut selon vos besoins
+        }
+    } else {
+        // Une erreur s'est produite lors de l'appel à waitpid
+        perror("waitpid");
+        return JOB_STATUS_DONE;  // ou un autre statut selon vos besoins
+    }
+}
+
 // Fonction pour mettre à jour l'état d'un job
 void update_job_status(pid_t process_id, enum JobStatus new_status) {
       Job *current_job = jobs_list;  // Assurez-vous d'avoir un pointeur de tête pour la liste des jobs
@@ -67,6 +94,17 @@ void update_job_status(pid_t process_id, enum JobStatus new_status) {
     }
 }
 
+// Fonction pour mettre à jour l'état de tous les jobs
+void update_all_jobs() {
+    Job *current_job = jobs_list; // Supposons que `head` est votre pointeur de début de la liste de jobs
+
+    while (current_job != NULL) {
+        enum JobStatus new_status = check_job_status(current_job->process_id);
+        update_job_status(current_job->process_id, new_status);
+        current_job = current_job->next;
+    }
+}
+
 // Fonction pour supprimer les jobs terminés de la liste
 void remove_completed_jobs() {
      Job *current = jobs_list;
@@ -80,7 +118,6 @@ void remove_completed_jobs() {
             } else {
                 jobs_list = current->next;
             }
-
             // Libérer la mémoire du job
             free(current->command);
             free(current);
@@ -91,27 +128,106 @@ void remove_completed_jobs() {
             current = current->next;
         }
     }
+
 }
 
 // Fonction pour afficher la liste des jobs
 void print_jobs() {
-     Job *current = jobs_list;
+    Job *current = jobs_list;
+    
+    // Attendre un court instant pour permettre aux états des jobs de se mettre à jour
+    //sleep(1);
 
     while (current != NULL) {
         char* status;
-        if(current->status == JOB_STATUS_RUNNING){
+        if (current->status == JOB_STATUS_RUNNING) {
             status = "Running";
-        }
-        else if(current->status == JOB_STATUS_DONE ){
+        } else if (current->status == JOB_STATUS_DONE) {
             status = "Done";
-        }
-        else{
+        } else {
             status = "Stopped";
         }
-        printf("[%d]  %d  %s\t %s \n", current->id, current->process_id,status, current->command);
+        printf("[%d]  %d  %s\t %s \n", current->id, current->process_id, status, current->command);
         current = current->next;
     }
+    
 }
+
+// Fonction pour relancer à l'arrière-plan l'exécution du job spécifié en argument
+void bg_command(const char *job_id_str) {
+    int job_id = atoi(job_id_str);
+
+    // Trouver le job avec l'ID spécifié
+    Job *job = find_job_by_id(job_id);
+
+    if (job != NULL) {
+        // Relancer le processus en arrière-plan
+        kill(job->process_id, SIGCONT);
+        update_job_status(job->process_id, JOB_STATUS_RUNNING);
+        printf("Le job %d (%s) a été relancé en avant-plan.\n", job->id, job->command);
+    } else {
+        printf("Job %d non trouvé.\n", job_id);
+    }
+}
+
+// Fonction pour relancer à l'avant-plan l'exécution du job spécifié en argument
+void fg_command(const char *job_id_str) {
+    int job_id = atoi(job_id_str);
+
+    // Trouver le job avec l'ID spécifié
+    Job *job = find_job_by_id(job_id);
+
+    if (job != NULL) {
+        // Relancer le processus en avant-plan
+        kill(job->process_id, SIGCONT);
+        update_job_status(job->process_id, JOB_STATUS_RUNNING);
+
+        // Attendre la fin du processus en avant-plan
+        int status;
+        waitpid(job->process_id, &status, WUNTRACED);
+
+        // Mise à jour de l'état du job après son achèvement
+        if (WIFEXITED(status)) {
+            update_job_status(job->process_id, JOB_STATUS_DONE);
+            job->exit_status = WEXITSTATUS(status);
+        } else if (WIFSTOPPED(status)) {
+            update_job_status(job->process_id, JOB_STATUS_STOPPED);
+        } else if (WIFSIGNALED(status)) {
+            update_job_status(job->process_id, JOB_STATUS_DONE);
+            job->exit_status = WTERMSIG(status);
+        }
+
+        printf("Le job %d (%s) a été relancé en avant-plan.\n", job->id, job->command);
+    } else {
+        printf("Job %d non trouvé.\n", job_id);
+    }
+}
+
+// Fonction pour trouver un job par son ID
+Job *find_job_by_id(int job_id) {
+    Job *current_job = jobs_list; // Notre tête de liste normalement 
+
+    while (current_job != NULL) {
+        //printf("Recherche Job : %s\n", current_job->command);
+        if (current_job->process_id == job_id) {
+            return current_job; // Job trouvé
+        }
+        current_job = current_job->next;
+    }
+
+    return NULL; // Job non trouvé
+}
+
+void handle_sigchld(int signo) {
+    (void)signo;  // Évite un avertissement "unused parameter"
+    
+    // Attendre tous les processus fils sans bloquer
+    while (waitpid(-1, NULL, WNOHANG) > 0) {
+        // Mettre à jour l'état des jobs ici
+        update_all_jobs();
+    }
+}
+
 
 // Fonction pour libérer la mémoire des jobs
 void free_jobs() {
