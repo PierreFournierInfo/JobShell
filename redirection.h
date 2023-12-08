@@ -9,6 +9,11 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <stdbool.h>
+#include <string.h>
+#include "command_executor.h"
+#include "command_parser.h"
+#include "redirection.h"
+#include <errno.h>
 
 void command_r(char** res);
 size_t tailleTableauChar(char **tableau);
