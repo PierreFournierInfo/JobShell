@@ -7,16 +7,27 @@
 #include <fcntl.h>
 #include <signal.h>
 #include "signal_handler.h"
+#include "job_manager.h"
 
+//kill()
 
+int killProjet(int sig, Job job ){
+    return 1;
+}
+int killProjet( Job job ){
+    return 1;
+}
 
-int killProjet(char * arg1, char * arg2 ){
-    if(arg2[0]=='%'){
-        
-    }
+int killProjet(int sig, int pid ){
+    return 1;
+}
+int killProjet(int pid){
+    return 1;
 }
 
 
-int killProjet( char * arg2 ){
-    if(arg1[0]==)
+
+//Je commence par une fonction limitée qui exécute deux commandes à la fois (ne fonction donc qu'avec un seul pipe)
+int pipeLimitedTwo( char ** command1, char ** command2){
+    return 0;
 }

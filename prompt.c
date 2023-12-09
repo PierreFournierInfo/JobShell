@@ -66,6 +66,7 @@ char** separerParEspaces(const char* chaine, int* taille) {
     // Compter le nombre d'espaces pour déterminer la taille du tableau
     int nombreEspaces = 0;
     const char* it = chaine;
+    
     while (*it) {
         if (*it == ' ') {
             nombreEspaces++;
@@ -110,6 +111,84 @@ char** separerParEspaces(const char* chaine, int* taille) {
     result[index] = NULL;
 
     return result;
+}
+/**/
+char *** separeParPipe (const char* chaine, int* taille){
+    if (chaine == NULL || *chaine == '\0') {return NULL;}
+    int nombrePipe=0;
+    const char* copie=chaine;
+
+    while (*copie){
+        if(*copie=='|'){
+            nombrePipe+=1;
+            while(*(copie+1) =='|'){copie+=1;}
+        }
+        copie++;
+    }
+
+    *taille=nombrePipe+1;
+    char*** result=malloc(sizeof( char*)* (*taille) );
+
+    if (result == NULL) {
+        fprintf(stderr, "Erreur lors de l'allocation de mémoire pour le tableau.\n");
+        exit(EXIT_FAILURE);
+
+    }
+
+    copie=chaine;
+    int index=0;
+    const char* debutCommande=copie;
+
+    while (*copie) {
+        if (*copie == '|' || *(copie + 1) == '\0') {
+            if (*copie == '|') {
+                result[index] = separerParEspaces(debutCommande, copie - debutCommande);
+            } else { // Pour la dernière commande
+                result[index] = separerParEspaces(debutCommande, copie - debutCommande + 1);
+            }
+            debutCommande = copie + 1;
+            index++;
+        }
+        copie++;
+    }
+    /*
+    while(*copie){
+        if(*copie!='|'){
+
+            //On marque le début du mot
+            const char* debutCommande=*copie;
+
+            //On se déplace à la fin du mot
+            while(*copie && *copie!='|'){ copie+=1;}
+
+            //On allour la mémoire pour stocker la commande dans le tableau
+            result[index]=malloc(sizeof(char**)*(copie-debutCommande+1));
+
+            if (result[index] == NULL) {
+                fprintf(stderr, "Erreur lors de l'allocation de mémoire pour la commande.\n");
+                exit(EXIT_FAILURE);
+            }
+
+            //On met la commande dans le tableau
+            char** commandeI=separerParEspaces(debutCommande, copie - debutCommande);
+
+            for(int i=0; i<copie-debutCommande;i++){
+                
+                strncpy(result[index][i], debutCommande, copie - debutCommande);
+                result[index][i][copie - debutCommande] = '\0';// Ajouter le caractère de fin de chaîne
+            }
+            
+            index++;
+
+        }else{
+            copie++;
+        }
+        
+
+    }*/
+    return result;
+
+
 }
 
 void freeAll(char** lib,int t){
