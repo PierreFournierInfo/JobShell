@@ -1,5 +1,5 @@
-#include <signal.h>
 #include "job_manager.h"
+#include <signal.h>
 
 // Exemple d'implémentation d'un module de gestion des tâches
 
@@ -9,9 +9,21 @@ int job_count = 0;
 
 // Fonction pour initialiser le gestionnaire de tâches
 void initialize_job_manager() {
+    /*struct sigaction sa;
+
+    // Initialiser la structure sa
+    sa.sa_handler = handle_sigchld;
+    sigemptyset(&sa.sa_mask);
+
+    // Utiliser sigaction pour gérer SIGCHLD
+    sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+    
+    if (sigaction(SIGCHLD, &sa, NULL) == -1) {
+        perror("sigaction");
+        exit(EXIT_FAILURE);
+    }
+    */
     jobs_list = NULL;
-    // Mettre en place le gestionnaire de signal pour SIGCHLD
-    signal(SIGCHLD, handle_sigchld);
     job_count = 0;
 }
 

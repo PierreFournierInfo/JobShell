@@ -10,7 +10,6 @@ int main() {
 
 // Gestion pour les jobs 
  initialize_job_manager();
- signal(SIGCHLD, handle_sigchld);
  
  while (1) {
         char* prompt = update_prompt();

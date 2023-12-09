@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c11
+CFLAGS =  -Wall -Wextra -std=c11
 LDFLAGS = -L. -lcommand_parser -lreadline
 
 all: jsh
