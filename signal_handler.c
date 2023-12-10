@@ -29,5 +29,28 @@ int killProjet(int pid){
 
 //Je commence par une fonction limitée qui exécute deux commandes à la fois (ne fonction donc qu'avec un seul pipe)
 int pipeLimitedTwo( char ** command1, char ** command2){
+    int fd [2][2];
+
+    for(int i=0;i<2;i++){
+        if (pipe(fd[i]<0)){
+            return 1;
+        }
+    }
+
+    pid_t pid1=fork();
+
+    if (pid1<0){
+        return 2;
+    }
+
+    if (pid1==0){
+        close(fd[0][1]);
+        close(fd[1][0]);
+
+        
+    }
+
+
+
     return 0;
 }
