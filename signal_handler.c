@@ -29,7 +29,7 @@ int killProjet(int pid){
 
 //Je commence par une fonction limitée qui exécute deux commandes à la fois (ne fonction donc qu'avec un seul pipe)
 int pipeLimitedTwo( char ** command1, char ** command2){
-    int fd [2][2];
+    int fd [2];
 
     for(int i=0;i<2;i++){
         if (pipe(fd[i]<0)){
@@ -44,10 +44,24 @@ int pipeLimitedTwo( char ** command1, char ** command2){
     }
 
     if (pid1==0){
-        close(fd[0][1]);
-        close(fd[1][0]);
+        close(fd[0]);
+        dup2(fd[1],STDOUT_FILENO);
+        close(fd[1]);
 
-        
+        execute_commande(command1[0],command1);
+        perror("execute_commande");
+        exit(EXIT_FAILURE);
+    }else{
+        close(fd[1]);
+        dup2(fd[0],STDIN_FILENO);
+        close(fd[0]);
+
+        wait(NULL);
+
+        execute_commande(command2[0],command2);
+        perror("execute_commande");
+        return -1;
+
     }
 
 
