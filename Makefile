@@ -1,40 +1,26 @@
 CC = gcc
-CFLAGS =  -Wall -Wextra -std=c11
+CFLAGS = -Wall -Wextra -std=c11 -D_DEFAULT_SOURCE
 LDFLAGS = -L. -lcommand_parser -lreadline
 
-all: jsh
+TARGET = jsh
+OBJS = main.o prompt.o job_manager.o redirection.o command_parser.o command_executor.o
 
-jsh: main.o prompt.o job_manager.o redirection.o libcommand_parser.a 
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 main.o: main.c command_parser.h command_executor.h redirection.h prompt.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-libcommand_parser.a: command_parser.o command_executor.o 
-	ar rcs $@ $^
-
-command_parser.o: command_parser.c command_parser.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-job_manager.o: job_manager.c job_manager.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-
-command_executor.o: command_executor.c command_executor.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-redirection.o: redirection.c redirection.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
 prompt.o: prompt.c prompt.h
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-
+job_manager.o: job_manager.c job_manager.h
+redirection.o: redirection.c redirection.h
+command_parser.o: command_parser.c command_parser.h
+command_executor.o: command_executor.c command_executor.h
 
 clean:
-	rm -f *.o *.a jsh
+	rm -f $(TARGET) $(OBJS)
 
-valgrind: jsh
-	valgrind --leak-check=full ./jsh
+valgrind: $(TARGET)
+	valgrind --leak-check=full ./$(TARGET)
 
-.PHONY: all clean
+.PHONY: all clean valgrind
