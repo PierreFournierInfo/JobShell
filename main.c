@@ -6,10 +6,31 @@
 #include "job_manager.h"
 #include"redirection.h"
 
+// Normalement dans signal handler 
+void ignore_signals() {
+    struct sigaction act = {0};
+    
+    // Ignorer le signal Ctrl+C (^C)
+    act.sa_handler = SIG_IGN;
+    if (sigaction(SIGINT, &act, NULL) == -1) {
+        perror("sigaction");
+        exit(EXIT_FAILURE);
+    }
+
+    // Ignorer le signal Ctrl+Z (^Z)
+    if (sigaction(SIGTSTP, &act, NULL) == -1) {
+        perror("sigaction");
+        exit(EXIT_FAILURE);
+    }
+}
+
 int main() {
 
-// Gestion pour les jobs 
+ // Gestion pour les jobs 
  initialize_job_manager();
+
+ // Ignorer les signaux qu'on a dit
+ ignore_signals();
  
  while (1) {
         char* prompt = update_prompt();

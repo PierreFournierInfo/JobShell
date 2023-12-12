@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c11 -D_DEFAULT_SOURCE
-LDFLAGS = -L. -lcommand_parser -lreadline
+LDFLAGS = -L. -lreadline
 
 TARGET = jsh
 OBJS = main.o prompt.o job_manager.o redirection.o command_parser.o command_executor.o

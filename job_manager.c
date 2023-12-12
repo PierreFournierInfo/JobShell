@@ -175,7 +175,7 @@ void bg_command(const char *job_id_str) {
         // Relancer le processus en arrière-plan
         kill(job->process_id, SIGCONT);
         update_job_status(job->process_id, JOB_STATUS_RUNNING);
-        printf("Le job %d (%s) a été relancé en avant-plan.\n", job->id, job->command);
+        printf("Le job %d (%s) a été relancé en arrière-plan.\n", job->id, job->command);
     } else {
         printf("Job %d non trouvé.\n", job_id);
     }
