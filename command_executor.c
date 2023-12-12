@@ -1,4 +1,7 @@
+
+#include <signal.h>
 #include "command_executor.h"
+
 
 void execute_command(char *command, char *args[]) {
     int background = 0;  // Variable pour indiquer s'il s'agit d'un processus en arrière-plan
@@ -23,10 +26,7 @@ void execute_command(char *command, char *args[]) {
     } else if (pid == 0) {
          // Processus fils
         if (background) {
-            // Ignorer les signaux liés au terminal pour le processus en arrière-plan
-            signal(SIGINT, SIG_IGN);
-            signal(SIGTSTP, SIG_IGN);
-            signal(SIGQUIT, SIG_IGN);
+            //signal_f();
         }
 
         valeur_de_retour = execvp(command, args);
@@ -55,12 +55,21 @@ void execute_command(char *command, char *args[]) {
                 perror("Le processus fils ne s'est pas terminé normalement.\n");
             }
         } else {
-            int status;
-            waitpid(pid, &status, WNOHANG);
+            //int status;
+            //waitpid(pid, &status, WNOHANG);
             // Processus en arrière-plan, ne pas attendre
             create_job(pid, command);   
-            printf("[%d] %s en arrière-plan\n", pid, command);
+            //printf("[%d] %s en arrière-plan\n", pid, command);
         }
     }
 }
+
+void signal_f(){
+    struct sigaction act = {0};
+    act.sa_handler = SIG_IGN;
+
+    sigaction(SIGTSTP, &act, NULL);
+}
+
+
 

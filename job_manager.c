@@ -1,5 +1,4 @@
 #include "job_manager.h"
-#include <signal.h>
 
 // Exemple d'implémentation d'un module de gestion des tâches
 
@@ -9,7 +8,7 @@ int job_count = 0;
 
 // Fonction pour initialiser le gestionnaire de tâches
 void initialize_job_manager() {
-    /*struct sigaction sa;
+    struct sigaction sa;
 
     // Initialiser la structure sa
     sa.sa_handler = handle_sigchld;
@@ -22,7 +21,7 @@ void initialize_job_manager() {
         perror("sigaction");
         exit(EXIT_FAILURE);
     }
-    */
+    
     jobs_list = NULL;
     job_count = 0;
 }
@@ -82,7 +81,7 @@ enum JobStatus check_job_status(pid_t process_id) {
         }
     } else {
         // Une erreur s'est produite lors de l'appel à waitpid
-        perror("waitpid");
+        // perror("waitpid");
         return JOB_STATUS_DONE;  // ou un autre statut selon vos besoins
     }
 }
@@ -231,12 +230,19 @@ Job *find_job_by_id(int job_id) {
 }
 
 void handle_sigchld(int signo) {
-    (void)signo;  // Évite un avertissement "unused parameter"
+     (void)signo;  // Évite un avertissement "unused parameter"
     
     // Attendre tous les processus fils sans bloquer
-    while (waitpid(-1, NULL, WNOHANG) > 0) {
+    pid_t pid;
+    int status;
+
+    while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
         // Mettre à jour l'état des jobs ici
         update_all_jobs();
+    }
+
+    if (pid == -1 && errno != ECHILD) {
+        perror("waitpid");
     }
 }
 

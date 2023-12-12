@@ -9,9 +9,9 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <string.h>
-#include <signal.h>
 #include "command_parser.h"
 #include "job_manager.h"
 
 void execute_command(char *command, char *args[]);
+void signal_f();
 #endif 

@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <errno.h>
 
 #define MAX_JOBS 512
 // Définir les états des jobs
