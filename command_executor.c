@@ -2,7 +2,6 @@
 #include <signal.h>
 #include "command_executor.h"
 
-
 void execute_command(char *command, char *args[]) {
     int background = 0;  // Variable pour indiquer s'il s'agit d'un processus en arrière-plan
 
@@ -67,7 +66,6 @@ void execute_command(char *command, char *args[]) {
 void signal_f(){
     struct sigaction act = {0};
     act.sa_handler = SIG_IGN;
-
     sigaction(SIGTSTP, &act, NULL);
 }
 

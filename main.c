@@ -32,6 +32,7 @@ int main() {
  // Ignorer les signaux qu'on a dit
  ignore_signals();
  
+ 
  while (1) {
         char* prompt = update_prompt();
         rl_outstream = stderr;

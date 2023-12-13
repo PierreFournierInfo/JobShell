@@ -40,6 +40,12 @@ void initialize_job_manager() {
         if(new_job->command == NULL ) { fprintf(stderr,"Erreur job allocation de mémoire"); exit(EXIT_FAILURE);}
         strcpy(new_job->command,command);
         new_job->next = NULL;
+
+        // Créer un nouveau groupe de processus avec le PID du job
+        if (setpgid(process_id, process_id) == -1) {
+            perror("setpgid");
+            exit(EXIT_FAILURE);
+        }
     }
 
     // ajouter dans notre liste de Job le nouveau Job
@@ -88,7 +94,7 @@ enum JobStatus check_job_status(pid_t process_id) {
 
 // Fonction pour mettre à jour l'état d'un job
 void update_job_status(pid_t process_id, enum JobStatus new_status) {
-      Job *current_job = jobs_list;  // Assurez-vous d'avoir un pointeur de tête pour la liste des jobs
+      Job *current_job = jobs_list;  //  un pointeur de tête pour la liste des jobs
     while (current_job != NULL) {
         if (current_job->process_id == process_id) {
             current_job->exit_status = new_status;
@@ -97,7 +103,7 @@ void update_job_status(pid_t process_id, enum JobStatus new_status) {
             } else if (WIFSTOPPED(new_status)) {
                 current_job->status = JOB_STATUS_STOPPED;
             } else if (WIFSIGNALED(new_status)) {
-                current_job->status = JOB_STATUS_DONE; // ou JOB_STATUS_RUNNING selon votre logique
+                current_job->status = JOB_STATUS_DONE; // ou JOB_STATUS_RUNNING logique
             }
             break;  // Le processus a été trouvé, inutile de continuer la recherche
         }
@@ -107,7 +113,7 @@ void update_job_status(pid_t process_id, enum JobStatus new_status) {
 
 // Fonction pour mettre à jour l'état de tous les jobs
 void update_all_jobs() {
-    Job *current_job = jobs_list; // Supposons que `head` est votre pointeur de début de la liste de jobs
+    Job *current_job = jobs_list; // Supposons que `head` est notre pointeur de début de la liste de jobs
 
     while (current_job != NULL) {
         enum JobStatus new_status = check_job_status(current_job->process_id);
@@ -173,7 +179,11 @@ void bg_command(const char *job_id_str) {
 
     if (job != NULL) {
         // Relancer le processus en arrière-plan
-        kill(job->process_id, SIGCONT);
+        killpg(job->process_id, SIGCONT);  // Envoyer SIGCONT à tout le groupe de processus
+
+        // Assigner le contrôle du terminal au groupe de processus du job
+        tcsetpgrp(STDIN_FILENO, job->process_id);
+
         update_job_status(job->process_id, JOB_STATUS_RUNNING);
         printf("Le job %d (%s) a été relancé en arrière-plan.\n", job->id, job->command);
     } else {
@@ -189,13 +199,20 @@ void fg_command(const char *job_id_str) {
     Job *job = find_job_by_id(job_id);
 
     if (job != NULL) {
-        // Relancer le processus en avant-plan
-        kill(job->process_id, SIGCONT);
+         // Relancer le processus en avant-plan
+        killpg(job->process_id, SIGCONT);  // Envoyer SIGCONT à tout le groupe de processus
+
+        // Assigner le contrôle du terminal au groupe de processus du job
+        tcsetpgrp(STDIN_FILENO, job->process_id);
+
         update_job_status(job->process_id, JOB_STATUS_RUNNING);
 
         // Attendre la fin du processus en avant-plan
         int status;
         waitpid(job->process_id, &status, WUNTRACED);
+
+        // Assigner le contrôle du terminal au groupe de processus du shell
+        tcsetpgrp(STDIN_FILENO, getpgrp());
 
         // Mise à jour de l'état du job après son achèvement
         if (WIFEXITED(status)) {
@@ -207,7 +224,6 @@ void fg_command(const char *job_id_str) {
             update_job_status(job->process_id, JOB_STATUS_DONE);
             job->exit_status = WTERMSIG(status);
         }
-
         printf("Le job %d (%s) a été relancé en avant-plan.\n", job->id, job->command);
     } else {
         printf("Job %d non trouvé.\n", job_id);
@@ -225,7 +241,6 @@ Job *find_job_by_id(int job_id) {
         }
         current_job = current_job->next;
     }
-
     return NULL; // Job non trouvé
 }
 
@@ -251,7 +266,6 @@ void handle_sigchld(int signo) {
 void free_jobs() {
      Job *current = jobs_list;
      Job *next;
-
     while (current != NULL) {
         next = current->next;
         free(current->command);
