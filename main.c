@@ -4,14 +4,18 @@
 #include "command_executor.h"
 #include "prompt.h"
 #include "job_manager.h"
+#include "signal_handler.h"
 
 int main() {
-
+    /*test fonction pipeLimitedTwo réussi : 25
+    pipeLimitedTwo("ls","wc -l");
+    */
  while (1) {
         char* prompt = update_prompt();
         rl_outstream = stderr;
         char *input = readline(prompt);
         free(prompt);  
+        
         if (!input || input == NULL) {
             exit(valeur_de_retour);
             break;  
@@ -40,6 +44,8 @@ int main() {
 
             free(input);  // Libère la mémoire allouée pour la ligne de commande lue
         }
+        
     }
+    
     return 0;
 }

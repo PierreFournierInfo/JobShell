@@ -8,9 +8,11 @@
 #include <signal.h>
 #include "signal_handler.h"
 #include "job_manager.h"
+#include "prompt.h"
+#include "command_executor.h"
 
 //kill()
-
+/*
 int killProjet(int sig, Job job ){
     return 1;
 }
@@ -23,18 +25,20 @@ int killProjet(int sig, int pid ){
 }
 int killProjet(int pid){
     return 1;
-}
+}*/
 
 
 
 //Je commence par une fonction limitée qui exécute deux commandes à la fois (ne fonction donc qu'avec un seul pipe)
-int pipeLimitedTwo( char ** command1, char ** command2){
+int pipeLimitedTwo( char * c1, char * c2){
     int fd [2];
+    int taille1,taille2;
+    char** command1=separerParEspaces(c1,&taille1);
+    char** command2=separerParEspaces(c2,&taille2);
 
-    for(int i=0;i<2;i++){
-        if (pipe(fd[i]<0)){
-            return 1;
-        }
+
+    if(pipe(fd)<0){
+        return 1;
     }
 
     pid_t pid1=fork();
@@ -48,7 +52,7 @@ int pipeLimitedTwo( char ** command1, char ** command2){
         dup2(fd[1],STDOUT_FILENO);
         close(fd[1]);
 
-        execute_commande(command1[0],command1);
+        execute_command(command1[0],command1);
         perror("execute_commande");
         exit(EXIT_FAILURE);
     }else{
@@ -58,9 +62,9 @@ int pipeLimitedTwo( char ** command1, char ** command2){
 
         wait(NULL);
 
-        execute_commande(command2[0],command2);
+        execute_command(command2[0],command2);
         perror("execute_commande");
-        return -1;
+        return 0;
 
     }
 
