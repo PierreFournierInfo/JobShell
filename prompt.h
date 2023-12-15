@@ -20,5 +20,5 @@ char* update_prompt();
 int prompt();
 void freeAll(char** lib,int t);
 bool redirection_verif(char* input);
-
+void afficherTableauChar(char **tableau);
 #endif // COMMAND_PARSER_H

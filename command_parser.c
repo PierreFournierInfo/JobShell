@@ -105,6 +105,7 @@ void execute_internal_command(const char *command) {
     } 
     else if (strncmp(command, "exit",4) == 0) {
         // Vérifier les jobs en cour si il y a un souci (pour plus tard)
+
         const char * suite = getSuite(command+5);
         if((command[4]=='\0')) {
             free_jobs();

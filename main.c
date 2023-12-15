@@ -47,7 +47,8 @@ int main() {
          if(redirection_verif(input)){  // vérification de la possibilité de redirection 
             int taille=0;
             char** res = separerParEspaces(input,&taille);
-            command_r(res);
+            //afficherTableauChar(res);
+            command_r(res,taille);
             freeAll(res,taille);
             free(input); 
         }

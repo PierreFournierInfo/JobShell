@@ -121,4 +121,16 @@ bool redirection_verif(char* input){
     return false;
 }
 
+void afficherTableauChar(char **tableau) {
+    // Vérification si le tableau est NULL
+    if (tableau == NULL) {
+        printf("Le tableau est NULL.\n");
+        return;
+    }
+
+    // Parcours du tableau et affichage des éléments
+    for (size_t i = 0; tableau[i] != NULL; ++i) {
+        printf("%s\n", tableau[i]);
+    }
+}
 

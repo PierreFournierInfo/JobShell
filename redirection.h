@@ -15,8 +15,8 @@
 #include "redirection.h"
 #include <errno.h>
 
-void command_r(char** res);
+void command_r(char** res,int taille);
 size_t tailleTableauChar(char **tableau);
 bool verif_fic(const char *fic);
-void redirect(char** res, int* pipefd, pid_t child_pid );
+void redirect(char** res, int* pipefd,int taille);
 #endif 
