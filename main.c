@@ -82,7 +82,7 @@ int main() {
             
                 // Affichage des résultats tests 
                 if(strlen(input)>0) execute_command(res[0],res);
-                freeAll(res,taille);
+                //freeAll(res,taille);
                 free(input);  // Libère la mémoire allouée pour la ligne de commande lue
         }
     }

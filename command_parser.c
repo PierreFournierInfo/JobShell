@@ -120,3 +120,15 @@ void execute_internal_command(const char *command) {
         valeur_de_retour = 1;
     }
 }
+
+bool is_internal_command(const char *command) {
+    // Ajoutez ici les autres commandes internes, si nécessaire
+    return strcmp(command, "pwd") == 0 ||
+           strncmp(command, "cd", 2) == 0 ||
+           strcmp(command, "?") == 0 ||
+           strncmp(command, "exit", 4) == 0;
+}
+
+bool is_exit_command(const char *command) {
+    return strncmp(command, "exit", 4) == 0;
+}

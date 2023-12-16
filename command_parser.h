@@ -12,5 +12,7 @@
 
 extern int valeur_de_retour;
 void execute_internal_command(const char *command);
+bool is_internal_command(const char *command);
+bool is_exit_command(const char *command);
 
 #endif // COMMAND_PARSER_H

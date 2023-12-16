@@ -1,5 +1,6 @@
 
 #include <signal.h>
+#include "prompt.h"
 #include "command_executor.h"
 
 void execute_command(char *command, char *args[]) {
@@ -22,7 +23,8 @@ void execute_command(char *command, char *args[]) {
     if (pid == -1) {
         perror("fork");
         exit(EXIT_FAILURE);
-    } else if (pid == 0) {
+    } 
+    else if (pid == 0) {
          // Processus fils
         if (background) {
             //signal_f();
@@ -60,6 +62,8 @@ void execute_command(char *command, char *args[]) {
             create_job(pid, command);   
             //printf("[%d] %s en arrière-plan\n", pid, command);
         }
+
+        freeAll(args,args_count+1);
     }
 }
 

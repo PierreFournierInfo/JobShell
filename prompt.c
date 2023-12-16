@@ -106,7 +106,7 @@ char** separerParEspaces(const char* chaine, int* taille) {
 void freeAll(char** lib,int t){
     for(int i=0; i<t-1;i++){
         free(lib[i]);
-        }
+    }
     free(lib);
 }
 
