@@ -19,4 +19,6 @@ void command_r(char** res,int taille);
 size_t tailleTableauChar(char **tableau);
 bool verif_fic(const char *fic);
 void redirect(char** res, int* pipefd,int taille);
+char **before_com(char **res) ;
+
 #endif 

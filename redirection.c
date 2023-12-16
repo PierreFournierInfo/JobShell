@@ -17,28 +17,34 @@ size_t tailleTableauChar(char **tableau) {
     return taille;
 }
 
+
 char** before_com(char **res){
-    size_t taille = tailleTableauChar(res);
-    //printf("%ld \n", taille);
-    int ind=0;
-    char** t = malloc(sizeof (taille+1));
-    for(size_t i=0; i < taille+1 ;i++){
-        if(strcmp(res[i],"<")==0 ||
-            strcmp(res[i],">")==0 ||
-            strcmp(res[i],">|")==0 ||
-            strcmp(res[i],">>")==0 ||
-            strcmp(res[i],"2>")==0 ||
-            strcmp(res[i],"2>|")==0 ||
-            strcmp(res[i],"2>>")==0){
+     size_t taille = tailleTableauChar(res);
+    // Utilisez sizeof(char*) pour allouer la mémoire pour le tableau de pointeurs
+    char** t = malloc(sizeof(char*) * (taille + 1));
+
+    if (t == NULL) {
+        perror("Erreur d'allocation de mémoire");
+        exit(EXIT_FAILURE);
+    }
+
+    int ind = 0;
+
+    for(size_t i = 0; i < taille + 1; i++){
+        if(strcmp(res[i], "<") == 0 ||
+            strcmp(res[i], ">") == 0 ||
+            strcmp(res[i], ">|") == 0 ||
+            strcmp(res[i], ">>") == 0 ||
+            strcmp(res[i], "2>") == 0 ||
+            strcmp(res[i], "2>|") == 0 ||
+            strcmp(res[i], "2>>") == 0){
                 break;
         }
-        //printf("%s\n",res[i]);
         ind++;
-        t[i]=res[i];
+        t[i] = res[i];
     }
-    //printf("%d\n", ind);
-    t[ind]=NULL;
-    //free(res);
+    t[ind] = NULL;
+
     return t;
 }
 
@@ -64,19 +70,19 @@ void command_r(char** res,int taille){
         } 
         
         if (child_pid == 0)    {  // Code du processus enfant
-        redirect(res,pipefd,taille); 
-  
-        // Exécuter la commande interne dans le processus enfant
-        execute_internal_command(res[0]);
+            redirect(res,pipefd,taille); 
+    
+            // Exécuter la commande interne dans le processus enfant
+            execute_internal_command(res[0]);
 
-        // Si la commande est "exit", terminer le processus enfant avec exit
-        if (strncmp(res[0], "exit", 4) == 0) {
-            exit(EXIT_SUCCESS);
+            // Si la commande est "exit", terminer le processus enfant avec exit
+            if (strncmp(res[0], "exit", 4) == 0) {
+                exit(EXIT_SUCCESS);
+            }
+
+            // Sinon, le processus enfant se termine sans exit
+            exit(EXIT_FAILURE);
         }
-
-        // Sinon, le processus enfant se termine sans exit
-        exit(EXIT_FAILURE);
-    }
         else {  // Code du processus parent
             close(pipefd[1]);  // Fermer la fin inutilisée du pipe en écriture 
 
@@ -86,18 +92,17 @@ void command_r(char** res,int taille){
             
             // Vérifier si le processus fils s'est terminé normalement
             if (WIFEXITED(status)) {
-            // Vérifier le code de sortie du processus fils
-            int exit_status = WEXITSTATUS(status);
-            //valeur_de_retour = exit_status;
-            // Vous pouvez utiliser exit_status pour savoir si la commande était "exit"
-            if (exit_status == EXIT_SUCCESS) {
-                //printf("Le processus fils a exécuté la commande 'exit'\n");
-                exit(valeur_de_retour);
-            } else {
-                //printf("Le processus fils s'est terminé sans exécuter la commande 'exit'\n");
+                // Vérifier le code de sortie du processus fils
+                int exit_status = WEXITSTATUS(status);
+                //valeur_de_retour = exit_status;
+                // Vous pouvez utiliser exit_status pour savoir si la commande était "exit"
+                if (exit_status == EXIT_SUCCESS) {
+                    //printf("Le processus fils a exécuté la commande 'exit'\n");
+                    exit(valeur_de_retour);
+                } else {
+                    //printf("Le processus fils s'est terminé sans exécuter la commande 'exit'\n");
+                }
             }
-        }
-
             // Réinitialiser l'entrée standard pour permettre l'interaction utilisateur
             if (dup2(STDIN_FILENO, 0) == -1) {
                 perror("Erreur lors de la réinitialisation de l'entrée standard");
@@ -106,7 +111,7 @@ void command_r(char** res,int taille){
         }
     }
     else{
-        //printf(" Else commandd _ r\n ");
+        //printf(" Else commande externe \n ");
         int pipefd[2];
         pid_t child_pid;
         if (pipe(pipefd) != 0) { perror("Erreur au pipe"); exit(EXIT_FAILURE);}
@@ -115,16 +120,18 @@ void command_r(char** res,int taille){
         child_pid = fork();
         if (child_pid < 0) { perror("Erreur fork");  exit(EXIT_FAILURE);}
 
-        if (child_pid == 0)    {  // Code du processus enfant
-        //afficherTableauChar(res);
-        redirect(res,pipefd,taille); 
-  
-        // Exécuter la commande interne dans le processus enfant
-        //printf("test commande");
-        char** utilisation = before_com(res);
         
-        execute_command(utilisation[0],utilisation);
-        exit(EXIT_SUCCESS);
+        if (child_pid == 0)    {  // Code du processus enfant
+            //afficherTableauChar(res);
+            redirect(res,pipefd,taille); 
+    
+            // Exécuter la commande interne dans le processus enfant
+            char** utilisation = before_com(res);
+            //afficherTableauChar(utilisation);
+
+            execute_command(utilisation[0],utilisation);
+            
+            exit(EXIT_SUCCESS);
         }
         else {  // Code du processus parent
             close(pipefd[1]);  // Fermer la fin inutilisée du pipe en écriture 
@@ -147,7 +154,7 @@ void command_r(char** res,int taille){
             } else {
                 // Le processus fils ne s'est pas terminé normalement
                 if (WIFSIGNALED(status)) {
-                    printf("Le processus fils a été tué par le signal : %d\n", WTERMSIG(status));
+                    //printf("Le processus fils a été tué par le signal : %d\n", WTERMSIG(status));
                 }
             }
 
@@ -162,23 +169,16 @@ void command_r(char** res,int taille){
 }
 
 /*------------------------- GESTION PRINCIPAL DES REDIRECTIONS ---------------------------------*/
-
-void redirect(char** res, int* pipefd , int taille){
-       
+void redirect(char** res, int* pipefd, int taille) {
     close(pipefd[0]);  // Fermer la fin inutilisée du pipe
 
-    for (int i = 0; i < taille; i++) {
-        //printf("%s %s \n",res[i],res[i+1]);
-        
+    for (int i = 0; i < taille - 1; i++) {
         if (strcmp(res[i], "<") == 0) {
-            //printf("%s \n",res[i+1]);
             if (verif_fic(res[i + 1]) == true) {
-                    
                 int fd = open(res[i + 1], O_RDONLY);
-                //printf("test 2");
                 if (fd < 0) {
                     perror("JSH : Erreur lors de l'ouverture du fichier");
-                    valeur_de_retour=1;
+                    valeur_de_retour = 1;
                     exit(EXIT_FAILURE);
                 }
 
@@ -186,143 +186,57 @@ void redirect(char** res, int* pipefd , int taille){
                 int fd2 = dup2(fd, STDIN_FILENO);
                 if (fd2 == -1) {
                     perror("Erreur lors de la redirection de l'entrée standard");
-                    valeur_de_retour=1;
+                    valeur_de_retour = 1;
                     exit(EXIT_FAILURE);
                 }
 
                 close(fd);
-                break;  // Fermer le descripteur de fichier supplémentaire
             } else {
                 perror(strcat(res[i + 1], ": Aucun fichier ou dossier de ce type"));
-                valeur_de_retour=1;
+                valeur_de_retour = 1;
                 exit(EXIT_FAILURE);
             }
-        }
 
-        else if(strcmp(res[i], ">") == 0){
-                // Ouvrir ou créer le fichier en écriture seulement, en ajoutant au contenu existant
-                //printf("%s 1\n",res[i+1]);
-                int fd = open(res[i+1],O_WRONLY | O_CREAT | O_EXCL |  O_APPEND, 0666);
-                if (fd == -1) {
-                   // printf( "Erreur numéro %d \n", errno);
+        } else if (strcmp(res[i], ">") == 0 || strcmp(res[i], ">>") == 0 || strcmp(res[i], "2>") == 0 || strcmp(res[i], "2>>") == 0 || strcmp(res[i], ">|") == 0 || strcmp(res[i], "2>|") == 0) {
+            int flags;
+            int mode;
 
-                    perror("bash: sortie: cannot overwrite existing file");
-                    exit(EXIT_FAILURE);
-                }
+            if (strcmp(res[i], ">") == 0) {
+                flags = O_WRONLY | O_CREAT | O_EXCL | O_TRUNC;
+                mode = 0666;
+            } else if (strcmp(res[i], ">>") == 0 || strcmp(res[i], "2>>") == 0) {
+                flags = O_WRONLY | O_CREAT | O_APPEND;
+                mode = 0666;
+            } else if (strcmp(res[i], ">|") == 0 || strcmp(res[i], "2>|") == 0) {
+                flags = O_WRONLY | O_CREAT | O_TRUNC;
+                mode = 0666;
+            } else {  // res[i] is "2>"
+                flags = O_WRONLY | O_CREAT | O_TRUNC | O_EXCL;
+                mode = 0666;
+            }
 
-                // Rediriger la sortie erreur vers le fichier
-                if (dup2(fd, STDOUT_FILENO) == -1) {
-                    perror("Erreur lors de la redirection de la sortie standard");
-                    valeur_de_retour=1;
-                    exit(EXIT_FAILURE);
-                }
-
-                // Fermer le descripteur de fichier supplémentaire
-                close(fd);
-                break;
-        }
-        else if(strcmp(res[i], ">|")==0){
-                //printf("%s 2\n",res[i+1]);
-                // Ouvrir ou créer le fichier en écriture seulement, en ajoutant au contenu existant
-                int fd = open(res[i+1], O_WRONLY | O_CREAT |O_TRUNC, 0666);
-
-                if (fd == -1) {
-                    perror("Erreur lors de l'ouverture ou de la création du fichier");
-                    exit(EXIT_FAILURE);
-                }
-
-                // Rediriger la sortie standard vers le fichier
-                if (dup2(fd, STDOUT_FILENO) == -1) {
-                    perror("Erreur lors de la redirection de la sortie standard");
-                    exit(EXIT_FAILURE);
-                }
-
-                // Fermer le descripteur de fichier supplémentaire
-                close(fd);
-                break;
-        }
-        else if(strcmp(res[i], ">>")==0){
-            // Ouvrir ou créer le fichier en écriture seulement, en concaténant le contenu existant
-            //printf("%s 4\n",res[i+1]);
-            int fd = open(res[i+1], O_WRONLY | O_CREAT | O_APPEND, 0666);
-
+            // Ouvrir ou créer le fichier en écriture avec les bons drapeaux
+            int fd = open(res[i + 1], flags, mode);
             if (fd == -1) {
                 perror("Erreur lors de l'ouverture ou de la création du fichier");
                 exit(EXIT_FAILURE);
             }
 
-            // Rediriger la sortie standard vers le fichier
-            if (dup2(fd, STDOUT_FILENO) == -1) {
-                perror("Erreur lors de la redirection de la sortie standard");
+            // Rediriger la sortie vers le fichier
+            int fd2;
+            if (strcmp(res[i], "2>") == 0 || strcmp(res[i], "2>>") == 0 || strcmp(res[i], "2>|") == 0) {
+                fd2 = dup2(fd, STDERR_FILENO);
+            } else {
+                fd2 = dup2(fd, STDOUT_FILENO);
+            }
+
+            if (fd2 == -1) {
+                perror("Erreur lors de la redirection de la sortie standard ou erreur");
                 exit(EXIT_FAILURE);
             }
 
             // Fermer le descripteur de fichier supplémentaire
             close(fd);
-            break;
-        }
-        else if(strcmp(res[i], "2>") == 0){
-                 // Ouvrir ou créer le fichier en écriture seulement, en ajoutant au contenu existant
-                //printf("%s 6\n",res[i+1]);
-                int fd = open(res[i+1], O_WRONLY | O_CREAT | O_APPEND | O_EXCL, 0666);
-
-                if (fd == -1) {
-                    perror("Erreur lors de l'ouverture ou de la création du fichier");
-                    exit(EXIT_FAILURE);
-                }
-
-                // Rediriger la sortie erreur vers le fichier
-                if (dup2(fd, STDERR_FILENO) == -1) {
-                    perror("Erreur lors de la redirection de la sortie standard");
-                    exit(EXIT_FAILURE);
-                }
-
-                // Fermer le descripteur de fichier supplémentaire
-                close(fd);
-                break;
-        }
-        
-        else if(strcmp(res[i], "2>>") == 0){
-            // Ouvrir ou créer le fichier en écriture seulement, en écrasant le contenu existant 
-            //printf("%s 7\n",res[i+1]);
-            int fd = open(res[i+1], O_WRONLY | O_CREAT | O_APPEND, 0666);
-
-            if (fd == -1) {
-                perror("Erreur lors de l'ouverture ou de la création du fichier");
-                exit(EXIT_FAILURE);
-            }
-
-            // Rediriger la sortie erreur standard vers le fichier
-            if (dup2(fd, STDERR_FILENO) == -1) {
-                perror("Erreur lors de la redirection de la sortie standard");
-                exit(EXIT_FAILURE);
-            }
-
-            // Fermer le descripteur de fichier supplémentaire
-            close(fd);
-            break;
-        }
-        
-        else if(strcmp(res[i], "2>|") == 0){
-            // Ouvrir ou créer le fichier en écriture seulement, en concaténant le contenu existant
-            //printf("%s 8\n",res[i+1]);
-            int fd = open(res[i+1], O_WRONLY | O_CREAT | O_TRUNC, 0666);
-
-            if (fd == -1) {
-                perror("Erreur lors de l'ouverture ou de la création du fichier");
-                exit(EXIT_FAILURE);
-            }
-
-            // Rediriger la sortie erreur standard vers le fichier
-            if (dup2(fd, STDERR_FILENO) == -1) {
-                perror("Erreur lors de la redirection de la sortie standard");
-                exit(EXIT_FAILURE);
-            }
-
-            // Fermer le descripteur de fichier supplémentaire
-            close(fd);
-            break;
         }
     }
-    //printf("FIN \n");
 }
