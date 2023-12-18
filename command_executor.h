@@ -14,4 +14,7 @@
 
 void execute_command(char *command, char *args[]);
 void signal_f();
+
+void printf_r(char ** args);
+char* concatenate_arguments(char *args[]);
 #endif 

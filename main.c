@@ -34,6 +34,7 @@ int main() {
  
  
  while (1) {
+        check_all();   
         char* prompt = update_prompt();
         rl_outstream = stderr;
         char *input = readline(prompt);
@@ -44,7 +45,8 @@ int main() {
         }
 
         add_history(input);  // Ajoute à la commande à l'historique readline
-         if(redirection_verif(input)){  // vérification de la possibilité de redirection 
+
+        if(redirection_verif(input)){  // vérification de la possibilité de redirection 
             int taille=0;
             char** res = separerParEspaces(input,&taille);
             //afficherTableauChar(res);
