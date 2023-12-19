@@ -55,4 +55,5 @@ void update_background_jobs();
 void check_all();
 void print_jobs_f(Job *node) ;
 
+bool empty_jobs();
 #endif 

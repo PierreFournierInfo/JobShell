@@ -93,8 +93,6 @@ int main() {
                 //freeAll(res,taille);
                 free(input);  // Libère la mémoire allouée pour la ligne de commande lue
         }
-        
     }
-    
     return 0;
 }

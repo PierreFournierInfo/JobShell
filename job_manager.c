@@ -73,9 +73,10 @@ enum JobStatus check_job_status(pid_t process_id){ //Job* current_Job) {
         return JOB_STATUS_DONE;
     } else if(result ==-1){
         return JOB_STATUS_STOPPED;  // ou un autre statut selon vos besoins
-    }else if(result== -2){
+    }else {
         return JOB_STATUS_KILLED;
     }
+
 }
 
 // Fonction pour mettre à jour l'état d'un job
@@ -111,7 +112,7 @@ void print_jobs_f(Job *node) {
     else if(node->status == JOB_STATUS_STOPPED){
         fprintf(stderr,"[%d]  %d  Stopped\t %s\n", node->id, node->process_id, node->command);
     }
-    else if(node->status== JOB_STATUS_KILLED){
+    else if(node->status == JOB_STATUS_KILLED){
         fprintf(stderr,"[%d]  %d  Killed\t %s\n", node->id, node->process_id, node->command);
     }
 }
@@ -139,20 +140,7 @@ void remove_completed_jobs() {
             // Mettre à jour le pointeur vers le prochain nœud
             current = nextNode;
         }
-        else if(current->status == JOB_STATUS_STOPPED){
-            *previousPtr = current->next;
-            
-            // Stocker le prochain nœud avant de libérer la mémoire
-            Job *nextNode = current->next;
-
-            free(current->command);
-            free(current);
-
-            job_count--;
-
-            // Mettre à jour le pointeur vers le prochain nœud
-            current = nextNode;
-        } else {
+        else {
             previousPtr = &current->next;
         }
     }
@@ -268,7 +256,7 @@ enum JobStatus get_job_status(int status) {
     if (WIFEXITED(status)) {
         return JOB_STATUS_DONE;
     } else if (WIFSIGNALED(status)) {
-        return JOB_STATUS_DONE;
+        return JOB_STATUS_KILLED;
     } else if (WIFSTOPPED(status)) {
         return JOB_STATUS_STOPPED;
     } else {
@@ -307,4 +295,9 @@ void free_jobs() {
         free(current);
         current = next;
     }
+}
+
+// fonction pour vérifier si notre liste est null
+bool empty_jobs(){
+    return jobs_list == NULL;
 }
