@@ -39,19 +39,46 @@ int killProject(char ** c){
     //Seulement 1 argument, on utilise SIGTERM par défaut
     else if (size<3){
         if(c[1][0]=='%'){ //  kill %jobX  ---> ici on cherche à envoyer SIGTERM à tous les processus du job numéro jobX
-
+           
+            int numJob=atoi(c[1]+1); 
+            Job *job = find_job_by_id(numJob);
+            if(job){
+                killpg(job->process_id, signal);
+            }else{
+                fprintf(stderr,"Job %d non trouvé\n", numJob);
+                return 2;
+            }
         }else{  //  kill pid  ---> ici on cherche à envoyer SIGTERM au processus de l'identifiant pid
-            
+
+            pid_t pid=atoi(c[1]);
+            if(kill(pid,signal)<0){
+                fprintf(stderr, "Probleme kill"); 
+                return 3;
+            }
         }
     }
 
     //2 arguments, on envoie le signal c[1]
     else{ 
         signal=atoi(c[1]+1);
-        if(c[2][0]=='%'){ //  kill [-sig]  %jobX  ---> ici on cherche à envoyer sig (signal) à tous les processus du job numéro jobX
 
+        if(c[2][0]=='%'){ //  kill [-sig]  %jobX  ---> ici on cherche à envoyer sig (signal) à tous les processus du job numéro jobX
+           int numJob=atoi(c[2]+1);
+           Job *job = find_job_by_id(numJob);
+            if(job){
+                killpg(job->process_id, signal);
+            }else{
+                fprintf(stderr,"Job %d non trouvé\n", numJob);
+                return 4;
+            }
         }else{  //  kill [-sig] pid  ---> ici on cherche à envoyer sig(signal) au processus de l'identifiant pid
-            
+           //* 
+           pid_t pid=atoi(c[2]);
+           if(kill(pid,signal)<0){
+                fprintf(stderr, "Probleme kill"); 
+                return 5;
+            }
+
         }
 
     }
