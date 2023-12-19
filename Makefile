@@ -1,32 +1,27 @@
-# Nom de l'exécutable à produire
-TARGET = jsh
-
-# Compilateur à utiliser
 CC = gcc
+CFLAGS = -Wall -Wextra -std=c11 -D_DEFAULT_SOURCE
+LDFLAGS = -L. -lreadline
 
-# Options de compilation
-CFLAGS = -Wall -Wextra -g
+TARGET = jsh
+OBJS = main.o prompt.o job_manager.o redirection.o command_parser.o command_executor.o
 
-# Recherche des fichiers .c pour construire la liste des fichiers source
-SRC = $(wildcard *.c)
-
-# Conversion des fichiers .c en .o pour la liste des fichiers objets
-OBJ = $(SRC:.c=.o)
-
-# Règle par défaut
 all: $(TARGET)
 
-# Règle pour construire l'exécutable
-$(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-# Inclut les dépendances des en-têtes
-%.o: %.c
-	$(CC) $(CFLAGS) -c $<
+main.o: main.c command_parser.h command_executor.h redirection.h prompt.h
+prompt.o: prompt.c prompt.h
+job_manager.o: job_manager.c job_manager.h
+redirection.o: redirection.c redirection.h
+command_parser.o: command_parser.c command_parser.h
+command_executor.o: command_executor.c command_executor.h
 
 # Règle pour nettoyer les fichiers compilés
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -f $(TARGET) $(OBJS)
 
-# Empêche la confusion en cas de fichier nommé clean
-.PHONY: clean
+valgrind: $(TARGET)
+	valgrind --leak-check=full ./$(TARGET)
+
+.PHONY: all clean valgrind
