@@ -27,12 +27,8 @@ void ignore_signals_P() {
 
 int main() {
 
- // Gestion pour les jobs 
- initialize_job_manager();
-
  // Ignorer les signaux qu'on a dit
  ignore_signals_P();
- 
  
  while (1) {
         check_all();   

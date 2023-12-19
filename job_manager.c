@@ -4,27 +4,6 @@
 Job* jobs_list = NULL;
 int job_count = 0;
 
-// Fonction pour initialiser le gestionnaire de tâches
-void initialize_job_manager() {
-    struct sigaction sa;
-
-    // Initialiser la structure sa
-    sa.sa_handler = handle_sigchld;
-    sigemptyset(&sa.sa_mask);
-
-    // Utiliser sigaction pour gérer SIGCHLD
-    sa.sa_flags = SA_RESTART | SA_NOCLDSTOP | SA_SIGINFO;
-
-    if (sigaction(SIGCHLD, &sa, NULL) == -1) {
-        perror("sigaction");
-        exit(EXIT_FAILURE);
-    }
-
-    jobs_list = NULL;
-    job_count = 0;
-}
-
-
 // Fonction pour créer un nouveau job
 void create_job(pid_t process_id, const char *command) {
     Job *new_job = malloc(sizeof(Job));
@@ -48,39 +27,14 @@ void create_job(pid_t process_id, const char *command) {
     }
     // ajouter dans notre liste de Job le nouveau Job
     add_job(new_job);
-    
-    //return new_job;
-}
-void create_job_bis(pid_t process_id, const char *command) {
-    Job *new_job = malloc(sizeof(Job));
-    if (new_job != NULL) {
-        //job_count++/* assigner un ID unique */;
-        new_job->id = ++job_count;
-        new_job->process_id = process_id;
-        new_job->status = JOB_STATUS_RUNNING;
-        new_job->exit_status = 0; // Initialiser le code de sortie
-        // Vérification de notre allocation de mémoire 
-        new_job -> command = (char *)malloc(strlen(command) + 1);
-        if(new_job->command == NULL ) { fprintf(stderr,"Erreur job allocation de mémoire"); exit(EXIT_FAILURE);}
-        strcpy(new_job->command,command);
-        new_job->next = NULL;
-
-        // Créer un nouveau groupe de processus avec le PID du job
-        if (setpgid(process_id, process_id) == -1) {
-            perror("setpgid");
-            exit(EXIT_FAILURE);
-        }
-    }
-    // ajouter dans notre liste de Job le nouveau Job
-    add_job(new_job);
     fprintf(stderr,"[%d]  %d  Running\t %s\n", new_job->id, new_job->process_id, new_job->command);
-    //return new_job;
+
 }
 
 // Fonction pour ajouter un job à la liste
 void add_job( Job *job) {
       // Vérifier si un job avec le même ID existe déjà (normalement ça devrait pas arriver )
-    Job *existing_job = find_job_by_id(job->id);
+    Job *existing_job = find_job_by_process_id(job->id);
 
     if (existing_job != NULL) {
         // Mise à jour du job existant au lieu d'en ajouter un nouveau
@@ -114,15 +68,10 @@ enum JobStatus check_job_status(pid_t process_id){ //Job* current_Job) {
     pid_t result = waitpid(process_id, &status, WNOHANG);
 
     if (result > 0) {
-        //fprintf(stderr, "[XXX]\tYYYYYYYY\t Running\n");
         return JOB_STATUS_RUNNING;
     } else if (result == 0) {
-        // fprintf(stderr, "[XXX]%d\tYYYYYYYY\tDone\t%s\n",current_Job->process_id,current_Job->command);
         return JOB_STATUS_DONE;
     } else {
-        //fprintf(stderr, "[XXX]\tYYYYYYYY\t Stopped \n");
-        // Une erreur s'est produite lors de l'appel à waitpid
-        // perror("waitpid");
         return JOB_STATUS_STOPPED;  // ou un autre statut selon vos besoins
     }
 }
@@ -146,16 +95,19 @@ void update_job_status(pid_t process_id, int status) {
     }
 }
 
-void print_jobs_reverse(Job *node) {
+void print_jobs_f(Job *node) {
     if (node == NULL) {
         return;
     }
     // Récursion pour atteindre la fin de la liste
-    print_jobs_reverse(node->next);
+    print_jobs_f(node->next);
 
     // Afficher le nœud actuel
     if (node->status == JOB_STATUS_DONE) {
         fprintf(stderr,"[%d]  %d  Done\t %s\n", node->id, node->process_id, node->command);
+    }
+    else if(node->status == JOB_STATUS_STOPPED){
+        fprintf(stderr,"[%d]  %d  Killed\t %s\n", node->id, node->process_id, node->command);
     }
 }
 
@@ -165,10 +117,24 @@ void remove_completed_jobs() {
     Job *current = jobs_list;
     Job **previousPtr = &jobs_list;
 
-    print_jobs_reverse(current);
+    print_jobs_f(current);
     for (; current != NULL; current = *previousPtr) {
         if (current->status == JOB_STATUS_DONE) {
             
+            *previousPtr = current->next;
+            
+            // Stocker le prochain nœud avant de libérer la mémoire
+            Job *nextNode = current->next;
+
+            free(current->command);
+            free(current);
+
+            job_count--;
+
+            // Mettre à jour le pointeur vers le prochain nœud
+            current = nextNode;
+        }
+        else if(current->status == JOB_STATUS_STOPPED){
             *previousPtr = current->next;
             
             // Stocker le prochain nœud avant de libérer la mémoire
@@ -209,7 +175,7 @@ void bg_command(const char *job_id_str) {
     int job_id = atoi(job_id_str);
 
     // Trouver le job avec l'ID spécifié
-    Job *job = find_job_by_id(job_id);
+    Job *job = find_job_by_process_id(job_id);
 
     if (job != NULL) {
         // Relancer le processus en arrière-plan
@@ -230,7 +196,7 @@ void fg_command(const char *job_id_str) {
     int job_id = atoi(job_id_str);
 
     // Trouver le job avec l'ID spécifié
-    Job *job = find_job_by_id(job_id);
+    Job *job = find_job_by_process_id(job_id);
 
     if (job != NULL) {
          // Relancer le processus en avant-plan
@@ -265,13 +231,27 @@ void fg_command(const char *job_id_str) {
     }
 }
 
-// Fonction pour trouver un job par son ID
-Job *find_job_by_id(int job_id) {
+// Fonction pour trouver un job par son PID
+Job *find_job_by_process_id(int job_id) {
     Job *current_job = jobs_list; // Notre tête de liste normalement 
 
     while (current_job != NULL) {
         //printf("Recherche Job : %s\n", current_job->command);
         if (current_job->process_id == job_id) {
+            return current_job; // Job trouvé
+        }
+        current_job = current_job->next;
+    }
+    return NULL; // Job non trouvé
+}
+
+// Par ID
+Job *find_job_by_id(int job_id) {
+    Job *current_job = jobs_list; // Notre tête de liste normalement 
+
+    while (current_job != NULL) {
+        //printf("Recherche Job : %s\n", current_job->command);
+        if (current_job->id == job_id) {
             return current_job; // Job trouvé
         }
         current_job = current_job->next;
@@ -291,35 +271,7 @@ enum JobStatus get_job_status(int status) {
     }
 }
 
-void handle_sigchld(int signo) {
-     (void)signo;  // Évite un avertissement "unused parameter"
-    
-    // Attendre tous les processus fils sans bloquer
-    pid_t pid;
-    int status;
-
-    while ((pid = waitpid(-1, &status, WNOHANG | WUNTRACED | WCONTINUED)) > 0) {
-        // Trouver le job correspondant au PID
-        Job *job = find_job_by_id(pid);
-
-        if (job != NULL) {
-            // Mettre à jour l'état du job uniquement s'il a changé
-            enum JobStatus new_status = get_job_status(status);
-
-            if (job->status != new_status) {
-                update_job_status(pid, status);
-            }
-        }
-    }
-
-    if (pid == -1 && errno != ECHILD) {
-        perror("waitpid");
-    }
-
-    // Vérifier périodiquement l'état des processus en arrière-plan
-    //update_background_jobs();
-}
-
+// Actualistation des job
 void check_all() {
     Job *current = jobs_list;
     while (current != NULL) {
@@ -333,19 +285,12 @@ void check_all() {
             if (current->status != new_status) {
                 update_job_status(pid, status);
             }
-            if(current->status == JOB_STATUS_DONE) {
-                fprintf(stderr,"[XXX]\tYYYYYYYY\t%s\n",current->command);
-            }
-            else{
-                fprintf(stderr,"[XXX]\tYYYYYYYY\t%s\n",current->command);
-            }
         }   
-
         current = current->next;
     }
     remove_completed_jobs();
-}
 
+}
 
 // Fonction pour libérer la mémoire des jobs
 void free_jobs() {
