@@ -32,9 +32,7 @@ typedef struct Job{
 } Job;
 
 // Fonctions du module de gestion des tâches
-void initialize_job_manager();
 void create_job(pid_t process_id, const char *command);
-void create_job_bis(pid_t process_id, const char *command);
 void add_job( Job *job);
 
 //void update_job_status(pid_t process_id, enum JobStatus new_status);
@@ -43,15 +41,17 @@ void remove_completed_jobs();
 void print_jobs();
 void free_jobs();
 enum JobStatus check_job_status(pid_t process_id);//,Job* current);
+
 void bg_command(const char *job_id_str);
 void fg_command(const char *job_id_str);
+
+Job *find_job_by_process_id(int job_pid);
 Job *find_job_by_id(int job_id);
-void handle_sigchld(int signo) ;
 
 enum JobStatus get_job_status(int status);
 void update_background_jobs();
 
 void check_all();
-void print_jobs_reverse(Job *node) ;
+void print_jobs_f(Job *node) ;
 
 #endif 

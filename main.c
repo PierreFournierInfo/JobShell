@@ -5,7 +5,7 @@
 #include "prompt.h"
 #include "job_manager.h"
 #include"redirection.h"
-
+#include "kill_command.h"
 // Normalement dans signal handler 
 void ignore_signals() {
     struct sigaction act = {0};
@@ -26,12 +26,8 @@ void ignore_signals() {
 
 int main() {
 
- // Gestion pour les jobs 
- initialize_job_manager();
-
  // Ignorer les signaux qu'on a dit
  ignore_signals();
- 
  
  while (1) {
         check_all();   
@@ -58,6 +54,14 @@ int main() {
         else if(strcmp(input,"jobs")==0){
             print_jobs();
             free(input);
+        }
+        // pour la gestion des kill
+        else if(strncmp(input,"kill",4)==0){
+            int taille=0;
+            char** res = separerParEspaces(input,&taille);
+
+            freeAll(res,taille);
+            free(input); 
         }
         //bg ou fg
         else if(strncmp(input,"bg",2)==0 || strncmp(input,"fg",2)==0){
