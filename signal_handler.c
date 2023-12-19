@@ -11,28 +11,54 @@
 #include "prompt.h"
 #include "command_executor.h"
 
-//kill()
-/*
-int killProjet(int sig, Job job ){
-    return 1;
-}
-int killProjet( Job job ){
-    return 1;
-}
-*/
-//JE crois que c'est celui là:
-int killProjet(int sig, int pid ){
-    return 1;
+
+int taille(char** chaine){
+    int length = 0;
+
+    // Parcourir le tableau jusqu'à un élément NULL
+    while (chaine[length] != NULL) {
+        length++;
+    }
+    return length;
 }
 
-/*
-int killProjet(int pid){
-    return 1;
-}*/
+//Prends en argument une chaine de caractere de type: "kill [-sig] %job" ou "kill [-sig] pid"
+int killProject(char ** c){
 
+    //par défaut
+    int signal=SIGTERM;
+    char debut= c[0][0];
+    int size= taille(c);
 
+    //Trop d'arguments erreur de commande
+    if(size>3){
+        fprintf(stderr, "Erreur: Trop d'arguments\n");
+        return 1;
+    }
 
-//Je commence par une fonction limitée qui exécute deux commandes à la fois (ne fonction donc qu'avec un seul pipe)
+    //Seulement 1 argument, on utilise SIGTERM par défaut
+    else if (size<3){
+        if(c[1][0]=='%'){ //  kill %jobX  ---> ici on cherche à envoyer SIGTERM à tous les processus du job numéro jobX
+
+        }else{  //  kill pid  ---> ici on cherche à envoyer SIGTERM au processus de l'identifiant pid
+            
+        }
+    }
+
+    //2 arguments, on envoie le signal c[1]
+    else{ 
+        signal=atoi(c[1]+1);
+        if(c[2][0]=='%'){ //  kill [-sig]  %jobX  ---> ici on cherche à envoyer sig (signal) à tous les processus du job numéro jobX
+
+        }else{  //  kill [-sig] pid  ---> ici on cherche à envoyer sig(signal) au processus de l'identifiant pid
+            
+        }
+
+    }
+
+    return 0;
+}
+
 int pipeLimitedTwo( char * c1, char * c2){
 
     int fd [2];
@@ -75,4 +101,22 @@ int pipeLimitedTwo( char * c1, char * c2){
 
 
     return 0;
+}
+
+// Normalement dans signal handler 
+void ignore_signals() {
+    struct sigaction act = {0};
+    
+    // Ignorer le signal Ctrl+C (^C)
+    act.sa_handler = SIG_IGN;
+    if (sigaction(SIGINT, &act, NULL) == -1) {
+        perror("sigaction");
+        exit(EXIT_FAILURE);
+    }
+
+    // Ignorer le signal Ctrl+Z (^Z)
+    if (sigaction(SIGTSTP, &act, NULL) == -1) {
+        perror("sigaction");
+        exit(EXIT_FAILURE);
+    }
 }
