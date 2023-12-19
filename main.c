@@ -5,9 +5,10 @@
 #include "prompt.h"
 #include "job_manager.h"
 #include"redirection.h"
+#include "signal_handler.h"
 
 // Normalement dans signal handler 
-void ignore_signals() {
+void ignore_signals_P() {
     struct sigaction act = {0};
     
     // Ignorer le signal Ctrl+C (^C)
@@ -30,7 +31,7 @@ int main() {
  initialize_job_manager();
 
  // Ignorer les signaux qu'on a dit
- ignore_signals();
+ ignore_signals_P();
  
  
  while (1) {
@@ -60,6 +61,14 @@ int main() {
             print_jobs();
             free(input);
         }
+        else if(strncmp(input,"kill",4)==0){
+            int taille=0;
+            char** res = separerParEspaces(input,&taille);
+            killProject(res);
+            freeAll(res,taille);
+            free(input);
+        }
+        
         //bg ou fg
         else if(strncmp(input,"bg",2)==0 || strncmp(input,"fg",2)==0){
             int taille = 0;

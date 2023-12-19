@@ -10,7 +10,7 @@
 #include <readline/history.h>
 #include "prompt.h"
 #include "command_executor.h"
-
+#include "job_manager.h"
 
 int pipeLimitedTwo(char*, char*);
 int killProject(char ** c);
