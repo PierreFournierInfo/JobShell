@@ -13,5 +13,6 @@
 
 
 int pipeLimitedTwo(char*, char*);
+int killProject(char ** c);
 
 #endif 
