@@ -51,6 +51,31 @@ void create_job(pid_t process_id, const char *command) {
     
     //return new_job;
 }
+void create_job_bis(pid_t process_id, const char *command) {
+    Job *new_job = malloc(sizeof(Job));
+    if (new_job != NULL) {
+        //job_count++/* assigner un ID unique */;
+        new_job->id = ++job_count;
+        new_job->process_id = process_id;
+        new_job->status = JOB_STATUS_RUNNING;
+        new_job->exit_status = 0; // Initialiser le code de sortie
+        // Vérification de notre allocation de mémoire 
+        new_job -> command = (char *)malloc(strlen(command) + 1);
+        if(new_job->command == NULL ) { fprintf(stderr,"Erreur job allocation de mémoire"); exit(EXIT_FAILURE);}
+        strcpy(new_job->command,command);
+        new_job->next = NULL;
+
+        // Créer un nouveau groupe de processus avec le PID du job
+        if (setpgid(process_id, process_id) == -1) {
+            perror("setpgid");
+            exit(EXIT_FAILURE);
+        }
+    }
+    // ajouter dans notre liste de Job le nouveau Job
+    add_job(new_job);
+    fprintf(stderr,"[%d]  %d  Running\t %s\n", new_job->id, new_job->process_id, new_job->command);
+    //return new_job;
+}
 
 // Fonction pour ajouter un job à la liste
 void add_job( Job *job) {
@@ -130,7 +155,7 @@ void print_jobs_reverse(Job *node) {
 
     // Afficher le nœud actuel
     if (node->status == JOB_STATUS_DONE) {
-        fprintf(stderr, "[XXX]\tYYYYYYYY\tDone\t%s\n", node->command);
+        fprintf(stderr,"[%d]  %d  Done\t %s\n", node->id, node->process_id, node->command);
     }
 }
 
@@ -174,7 +199,7 @@ void print_jobs() {
         } else {
             status = "Stopped";
         }
-        printf("[%d]  %d  %s\t %s \n", current->id, current->process_id, status, current->command);
+        printf("[%d]  %d  %s\t %s\n", current->id, current->process_id, status, current->command);
         current = current->next;
     }
 }

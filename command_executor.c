@@ -61,10 +61,10 @@ void execute_command(char *command, char *args[]) {
         } else {
             // Processus en arrière-plan, ne pas attendre
             char* res = concatenate_arguments(args);
-            fprintf(stderr,"[XXX]\tYYYYYYYY\tRunning %s\n", res);
+            //fprintf(stderr,"[XXX]\tYYYYYYYY\tRunning %s\n", res);
             //free(res);
             //printf_r(args);
-            create_job(pid, res);   
+            create_job_bis(pid, res);   
 
             //setpgid(0, 0);  // Définir le groupe de processus du shell comme le groupe de contrôle du terminal
             // Vérifier et mettre à jour l'état des processus en arrière-plan

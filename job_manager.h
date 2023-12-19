@@ -34,6 +34,7 @@ typedef struct Job{
 // Fonctions du module de gestion des tâches
 void initialize_job_manager();
 void create_job(pid_t process_id, const char *command);
+void create_job_bis(pid_t process_id, const char *command);
 void add_job( Job *job);
 
 //void update_job_status(pid_t process_id, enum JobStatus new_status);
