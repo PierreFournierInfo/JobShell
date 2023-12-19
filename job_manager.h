@@ -19,6 +19,7 @@ enum JobStatus {
     JOB_STATUS_RUNNING,
     JOB_STATUS_STOPPED,
     JOB_STATUS_DONE,
+    JOB_STATUS_KILLED,
 };
 
 // Structure pour représenter un job

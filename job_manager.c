@@ -71,8 +71,10 @@ enum JobStatus check_job_status(pid_t process_id){ //Job* current_Job) {
         return JOB_STATUS_RUNNING;
     } else if (result == 0) {
         return JOB_STATUS_DONE;
-    } else {
+    } else if(result ==-1){
         return JOB_STATUS_STOPPED;  // ou un autre statut selon vos besoins
+    }else if(result== -2){
+        return JOB_STATUS_KILLED;
     }
 }
 
@@ -87,7 +89,7 @@ void update_job_status(pid_t process_id, int status) {
             } else if (WIFSTOPPED(status)) {
                 current_job->status = JOB_STATUS_STOPPED;
             } else if (WIFSIGNALED(status)) {
-                current_job->status = JOB_STATUS_STOPPED; 
+                current_job->status = JOB_STATUS_KILLED; 
             }
             break;
         }
@@ -107,6 +109,9 @@ void print_jobs_f(Job *node) {
         fprintf(stderr,"[%d]  %d  Done\t %s\n", node->id, node->process_id, node->command);
     }
     else if(node->status == JOB_STATUS_STOPPED){
+        fprintf(stderr,"[%d]  %d  Stopped\t %s\n", node->id, node->process_id, node->command);
+    }
+    else if(node->status== JOB_STATUS_KILLED){
         fprintf(stderr,"[%d]  %d  Killed\t %s\n", node->id, node->process_id, node->command);
     }
 }
@@ -119,7 +124,7 @@ void remove_completed_jobs() {
 
     print_jobs_f(current);
     for (; current != NULL; current = *previousPtr) {
-        if (current->status == JOB_STATUS_DONE) {
+        if (current->status == JOB_STATUS_DONE || current->status == JOB_STATUS_KILLED) {
             
             *previousPtr = current->next;
             
