@@ -112,7 +112,7 @@ char** separerParEspaces(const char* chaine, int* taille) {
 
     return result;
 }
-/**/
+
 /*char ** separeParPipe (const char* chaine, int* taille){
     if (chaine == NULL || *chaine == '\0') {return NULL;}
     int nombrePipe=0;

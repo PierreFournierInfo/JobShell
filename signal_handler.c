@@ -19,10 +19,13 @@ int killProjet(int sig, Job job ){
 int killProjet( Job job ){
     return 1;
 }
-
+*/
+//JE crois que c'est celui là:
 int killProjet(int sig, int pid ){
     return 1;
 }
+
+/*
 int killProjet(int pid){
     return 1;
 }*/
@@ -31,6 +34,7 @@ int killProjet(int pid){
 
 //Je commence par une fonction limitée qui exécute deux commandes à la fois (ne fonction donc qu'avec un seul pipe)
 int pipeLimitedTwo( char * c1, char * c2){
+
     int fd [2];
     int taille1,taille2;
     char** command1=separerParEspaces(c1,&taille1);
