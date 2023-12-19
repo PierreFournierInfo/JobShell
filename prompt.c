@@ -1,13 +1,4 @@
 #include "prompt.h"
-#include "command_parser.h"
-#include "command_executor.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
-#include <readline/readline.h>
-#include <readline/history.h>
 
 #define MAX_PROMPT_LEN 30
 
@@ -41,7 +32,7 @@ char* display() {
 }
 
 char* update_prompt() {
-    int x=0;
+    int x=job_count;
     char* p = "\033[32m[%d]\033[00m";
     char* d = display();
     char*fin="$ ";
@@ -170,3 +161,28 @@ void freeAll(char** lib,int t){
     }
     free(lib);
 }
+
+bool redirection_verif(char* input){
+    for(size_t i=0;i<strlen(input);i++){
+        if(input[i]=='|') return true;
+        if(input[i]=='<'){
+            return true;
+        } 
+        if(input[i]=='>') return true;
+    }
+    return false;
+}
+
+void afficherTableauChar(char **tableau) {
+    // Vérification si le tableau est NULL
+    if (tableau == NULL) {
+        printf("Le tableau est NULL.\n");
+        return;
+    }
+
+    // Parcours du tableau et affichage des éléments
+    for (size_t i = 0; tableau[i] != NULL; ++i) {
+        printf("%s\n", tableau[i]);
+    }
+}
+

@@ -1,12 +1,4 @@
-
 #include "command_parser.h"
-#include "job_manager.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <errno.h>
 
 #define PATH_MAX 512
 
@@ -55,6 +47,7 @@ void execute_internal_command(const char *command) {
 
     // Vérifie si la commande est "pwd"
     if (strcmp(command, "pwd") == 0) {
+        //printf("test pwd 2 \n");
         // Variable pour stocker le répertoire de travail courant
         char current_dir[PATH_MAX];
         
@@ -112,6 +105,7 @@ void execute_internal_command(const char *command) {
     } 
     else if (strncmp(command, "exit",4) == 0) {
         // Vérifier les jobs en cour si il y a un souci (pour plus tard)
+
         const char * suite = getSuite(command+5);
         if((command[4]=='\0')) {
             free_jobs();
@@ -125,4 +119,16 @@ void execute_internal_command(const char *command) {
     error : if(errno){
         valeur_de_retour = 1;
     }
+}
+
+bool is_internal_command(const char *command) {
+    // Ajoutez ici les autres commandes internes, si nécessaire
+    return strcmp(command, "pwd") == 0 ||
+           strncmp(command, "cd", 2) == 0 ||
+           strcmp(command, "?") == 0 ||
+           strncmp(command, "exit", 4) == 0;
+}
+
+bool is_exit_command(const char *command) {
+    return strncmp(command, "exit", 4) == 0;
 }
