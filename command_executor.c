@@ -48,16 +48,19 @@ void execute_command(char *command, char *args[]) {
                 // Mise à jour de l'état du job
                 if (WIFEXITED(status)) {
                     valeur_de_retour = WEXITSTATUS(status);
-                    update_job_status(pid,JOB_STATUS_DONE);
+                    update_job_status(pid,status);
                 }
                 else if (WIFSTOPPED(status)) {
                     valeur_de_retour = WEXITSTATUS(status);
                     update_job_status(pid,status);
                 }
                 else if (WIFSIGNALED(status)) {
-                    //valeur_de_retour = W(status);
                     update_job_status(pid,status);
                 } 
+                else if(WIFCONTINUED(status)) {
+                    printf("Reprendre");
+                    update_job_status(pid,status);
+                }
                 else {
                     perror("Le processus fils ne s'est pas terminé normalement.\n");
                 }

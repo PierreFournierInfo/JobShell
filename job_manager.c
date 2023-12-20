@@ -30,7 +30,7 @@ void create_job(pid_t process_id, const char *command, int back) {
     // ajouter dans notre liste de Job le nouveau Job
     add_job(new_job);
     
-    if(new_job -> background){
+    if(new_job -> background == 1){
         fprintf(stderr,"[%d]  %d  Running\t %s\n", new_job->id, new_job->process_id, new_job->command);
     }
 }
@@ -76,7 +76,7 @@ enum JobStatus check_job_status(pid_t process_id){ //Job* current_Job) {
     } else if (result == 0) {
         return JOB_STATUS_DONE;
     } else if(result ==-1){
-        return JOB_STATUS_STOPPED;  // ou un autre statut selon vos besoins
+        return JOB_STATUS_STOPPED; 
     }else {
         return JOB_STATUS_KILLED;
     }
@@ -93,30 +93,23 @@ void update_job_status(pid_t process_id, int status) {
             } else if (WIFSTOPPED(status)) {
                 current_job->status = JOB_STATUS_STOPPED;
             } else if (WIFSIGNALED(status)) {
-                
-                Job* f = find_job_by_id(process_id);
-                if(f != NULL){
-                    printf("Find");
+                if(current_job->background == 0){
+                    current_job -> background = 1;
+                    current_job->status = JOB_STATUS_STOPPED;
+                } 
+                else {
+                    current_job->status = JOB_STATUS_KILLED;
                 }
-                else{
-                    current_job->status = JOB_STATUS_KILLED; 
-                }
+            } else if(WIFCONTINUED(status)){
+                current_job -> status = JOB_STATUS_RUNNING;
+                current_job -> background = 1;
+                fprintf(stderr,"[%d]  %d  Running\t %s\n", current_job->id, current_job->process_id, current_job->command);
             }
             break;
         }
         current_job = current_job->next;
     }
 }
-
-/*
-void update_job_status_bis(pid_t process_id, int status , char* command) {
-    
-    Job *current_job = jobs_list;
-    Job* f = find_job_by_process_id(process_id);
-    if(f == NULL && current_job == NULL) {
-        fprintf(stderr,"NULL\n");
-    }
-}*/
 
 void print_jobs_f(Job *node) {
     if (node == NULL) {
@@ -135,10 +128,7 @@ void print_jobs_f(Job *node) {
         }
         else if(node->status == JOB_STATUS_KILLED){
             fprintf(stderr,"[%d]  %d  Killed\t %s\n", node->id, node->process_id, node->command);
-        }
-        /*else{
-            fprintf(stderr,"[%d]  %d  Running\t %s\n", node->id, node->process_id, node->command);
-        }*/
+        }   
     }
 }
 
@@ -150,7 +140,8 @@ void remove_completed_jobs() {
     
     print_jobs_f(current);
     for (; current != NULL; current = *previousPtr) {
-        if (current->status == JOB_STATUS_DONE || current->status == JOB_STATUS_KILLED) {
+        if ((current->status == JOB_STATUS_DONE || current->status == JOB_STATUS_KILLED )) {
+         //|| (current->background == 0 && current->status == JOB_STATUS_KILLED_B) ){
             
             *previousPtr = current->next;
             
