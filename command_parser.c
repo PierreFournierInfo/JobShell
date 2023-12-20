@@ -7,14 +7,14 @@ char chemin[1024];
 char ancien[1024];
 
 // Fonction pour vérifier l'existence d'un répertoire
-int directory_exists(const char *path) {
+int directory_exists(char *path) {
     struct stat dir_stat;
     return stat(path, &dir_stat) == 0 && S_ISDIR(dir_stat.st_mode);
 }
 
-void execute_cd(const char *command) {
+void execute_cd(char *command) {
     // Récupère l'argument de la commande cd (le chemin du répertoire)
-    const char *arg = strchr(command, ' '); // Supposant que la commande est "cd chemin"
+    char *arg = strchr(command, ' '); // Supposant que la commande est "cd chemin"
     
     // Si l'argument n'est pas fourni, affiche un message d'erreur
     if (arg == NULL || strlen(arg) <= 1) {
@@ -34,16 +34,16 @@ void execute_cd(const char *command) {
     }
 }
 
-    // Fonction pour récupérer la suite en ignorant les espaces
-    const char *getSuite(const char *chaine) {
-        while (*chaine != '\0' && *chaine == ' ') {
-            chaine++; // Ignorer les espaces
-        }
-        return chaine;
+// Fonction pour récupérer la suite en ignorant les espaces
+char* getSuite(char *chaine) {
+    while (*chaine != '\0' && *chaine == ' ') {
+        chaine++; // Ignorer les espaces
     }
+    return chaine;
+}
 
 
-void execute_internal_command(const char *command) {
+void execute_internal_command(char *command) {
 
     // Vérifie si la commande est "pwd"
     if (strcmp(command, "pwd") == 0) {
@@ -79,25 +79,25 @@ void execute_internal_command(const char *command) {
             }
         }
         else{
-            // Si on a des élément à la suite de la chaine
-            const char * suite = getSuite(command+3);
-            if(strcmp(suite,"-") == 0){ 
-                getcwd(ancien,sizeof(ancien));
+        // Si on a des élément à la suite de la chaine
+        char* suite = getSuite(command+3);
+        if(strcmp(suite,"-") == 0){ 
+            getcwd(ancien,sizeof(ancien));
              
-                if (chdir(chemin) != 0) {
-                        perror("Erreur lors du changement de répertoire 1");
-                        goto error;
-                }
-                strcpy(chemin,ancien);
+            if (chdir(chemin) != 0) {
+                perror("Erreur lors du changement de répertoire 1");
+                goto error;
             }
-            else{
-                if (!(getcwd(chemin, sizeof(chemin)) != NULL)) {perror("getcwd didn't work 2");} 
-                if (chdir(suite) != 0) {
-                    perror("Erreur lors du changement de répertoire 2");
-                    goto error;
-                }
+            strcpy(chemin,ancien);
+        }
+        else{
+            if (!(getcwd(chemin, sizeof(chemin)) != NULL)) {perror("getcwd didn't work 2");} 
+            if (chdir(suite) != 0) {
+                perror("Erreur lors du changement de répertoire 2");
+                goto error;
             }
         }
+      }
     } 
     else if (strcmp(command, "?") == 0) {
         printf("%d\n" , valeur_de_retour);
@@ -106,28 +106,32 @@ void execute_internal_command(const char *command) {
     else if (strncmp(command, "exit",4) == 0) {
         // Vérifier les jobs en cour si il y a un souci (pour plus tard)
         if(empty_jobs()) {
-            const char * suite = getSuite(command+5);
+            
             if((command[4]=='\0')) {
                 free_jobs();
+                free(command);
                 exit(valeur_de_retour);}
             else {
+                char* suite = getSuite(command+5);
+                int val = atoi(suite); 
                 free_jobs();
-                exit(atoi(suite));
+                free(command);
+                exit(val);
             }
         }
         else{
             fprintf(stderr,"exit\n");
             fprintf(stderr,"There are stopped jobs.\n");
+            //free(command);
             valeur_de_retour = 1;
         }
     }
-
     error : if(errno){
         valeur_de_retour = 1;
     }
 }
 
-bool is_internal_command(const char *command) {
+bool is_internal_command( char *command) {
     // Ajoutez ici les autres commandes internes, si nécessaire
     return strcmp(command, "pwd") == 0 ||
            strncmp(command, "cd", 2) == 0 ||
@@ -135,6 +139,6 @@ bool is_internal_command(const char *command) {
            strncmp(command, "exit", 4) == 0;
 }
 
-bool is_exit_command(const char *command) {
+bool is_exit_command( char *command) {
     return strncmp(command, "exit", 4) == 0;
 }

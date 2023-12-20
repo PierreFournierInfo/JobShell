@@ -1,4 +1,6 @@
 #include "prompt.h"
+#include "signal_handler.h"
+#include "job_manager.h"
 
 #define MAX_PROMPT_LEN 30
 
@@ -104,60 +106,9 @@ char** separerParEspaces(const char* chaine, int* taille) {
     return result;
 }
 
-/*char ** separeParPipe (const char* chaine, int* taille){
-    if (chaine == NULL || *chaine == '\0') {return NULL;}
-    int nombrePipe=0;
-    const char* copie=chaine;
-
-    while (*copie){
-        if(*copie=='|'){
-            nombrePipe+=1;
-            while(*(copie+1) =='|'){copie+=1;}
-        }
-        copie++;
-    }
-
-    *taille=nombrePipe+1;
-    char** result=malloc(sizeof( char*)* (*taille) );
-
-    if (result == NULL) {
-        fprintf(stderr, "Erreur lors de l'allocation de mémoire pour le tableau.\n");
-        exit(EXIT_FAILURE);
-
-    }
-
-    copie=chaine;
-    int index=0;
-    const char* debutCommande=copie;
-
-    while (*copie) {
-        if (*copie != '|') {
-            const char* debutCommande = copie;
-            // Trouver la fin du mot
-            while (*copie && *copie != '|') {copie++;}
-            // Allouer de la mémoire pour le mot
-            result[index] = malloc((copie - debutCommande + 1) * sizeof(char));
-            if (result[index] == NULL) {
-                fprintf(stderr, "Erreur lors de l'allocation de mémoire pour le mot.\n");
-                exit(EXIT_FAILURE);
-            }
-            // Copier le mot dans le tableau
-            strncpy(result[index], debutCommande, copie - debutCommande);
-            result[index][copie - debutCommande] = '\0'; // Ajouter le caractère de fin de chaîne
-            index++;
-        }
-         else {
-            copie++;
-        }
-    }
-    return result;
-
-
-}*/
-
 void freeAll(char** lib,int t){
-    for(int i=0; i<t-1;i++){
-        free(lib[i]);
+    for(int i=0; i<t;i++){
+        if(lib[i] != NULL)free(lib[i]);
     }
     free(lib);
 }
@@ -187,7 +138,7 @@ void afficherTableauChar(char **tableau) {
 }
 
 void traiteCommande(){
-    ignore_signals_P();
+//ignore_signals_P();
  
  while (1) {
         check_all();   
@@ -196,7 +147,7 @@ void traiteCommande(){
         char *input = readline(prompt);
         free(prompt);  
         
-        if (!input || input == NULL) {
+        if (!input) {
             exit(valeur_de_retour);
             break;  
         }
@@ -225,6 +176,7 @@ void traiteCommande(){
         }
         
         //bg ou fg
+        /*
         else if(strncmp(input,"bg",2)==0 || strncmp(input,"fg",2)==0){
             int taille = 0;
             char** res = separerParEspaces(input,&taille);
@@ -235,6 +187,7 @@ void traiteCommande(){
             freeAll(res,taille);
             free(input);
         }
+        */
         // Vérifie si la commande est une commande interne (pwd, cd, ?, exit)
         else if(strcmp(input, "pwd") == 0 || 
             strncmp(input, "cd", 2) == 0 || 
@@ -246,11 +199,10 @@ void traiteCommande(){
          else { 
                 int taille=0;
                 char** res = separerParEspaces(input,&taille);
-            
                 // Affichage des résultats tests 
                 if(strlen(input)>0) execute_command(res[0],res);
-                //freeAll(res,taille);
-                free(input);  // Libère la mémoire allouée pour la ligne de commande lue
+                
+                free(input);
         }
     }
 }

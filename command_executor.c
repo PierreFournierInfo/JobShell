@@ -1,6 +1,7 @@
 #include <signal.h>
 #include "prompt.h"
 #include "command_executor.h"
+#include "job_manager.h"
 
 void execute_command(char *command, char *args[]) {
     int background = 0;  // Variable pour indiquer s'il s'agit d'un processus en arrière-plan
@@ -14,6 +15,7 @@ void execute_command(char *command, char *args[]) {
     if (args_count > 0 && strcmp(args[args_count - 1], "&") == 0) {
         background = 1;
         // Supprimer "&" de la liste d'arguments
+        free(args[args_count - 1]);
         args[args_count - 1] = NULL;
     }
 
@@ -25,10 +27,6 @@ void execute_command(char *command, char *args[]) {
     } 
     else if (pid == 0) {
         setpgid(0,0);
-         // Processus fils
-        if (background) {
-            signal_f();
-        }
 
         valeur_de_retour = execvp(command, args);
         
@@ -36,44 +34,58 @@ void execute_command(char *command, char *args[]) {
         exit(EXIT_FAILURE);
     } 
     else {
+        char* res = concatenate_arguments(args);
+        create_job(pid,res,background);
+        
+        // pipeline job for plus tard 
+        
+        Job* job = find_job_by_process_id(pid);
+
         // Processus parent
         if (!background) { // pas à l'arrière plan 
             int status;
-            char* res = concatenate_arguments(args);
-            create_job(pid,res,0);
-            if (waitpid(pid, &status, WNOHANG) == 0) {
-                // Le processus fils est toujours en cours d'exécution
-                waitpid(pid, &status, 0);
-                
+            //printf("Je suis en avant \n");
+            if (waitpid(pid, &status, WCONTINUED | WUNTRACED )>0) {
+
+               
                 // Mise à jour de l'état du job
                 if (WIFEXITED(status)) {
+                    //printf("J'ai fini\n");
                     valeur_de_retour = WEXITSTATUS(status);
-                    update_job_status(pid,status);
+                    
+                    if(job != NULL) {
+                        job->status = JOB_STATUS_DONE;
+                        remove_job(job);
+                        free(res);
+                        freeAll(args,args_count+1);
+                        return;
+                    }   
+                } else if (WIFSIGNALED(status)) {
+                    dprintf(STDERR_FILENO,"Signal reçu \n");
+                    if(job != NULL) {
+                        job->status = JOB_STATUS_KILLED;
+                    }
+                } else if (WIFSTOPPED(status)) {
+                    //printf(" je suis stoppé\n");
+                    if(job != NULL) {
+                        job->status = JOB_STATUS_STOPPED;
+                    }
                 }
-                else if (WIFSTOPPED(status)) {
-                    valeur_de_retour = WEXITSTATUS(status);
-                    update_job_status(pid,status);
-                }
-                else if (WIFSIGNALED(status)) {
-                    update_job_status(pid,status);
-                } 
                 else if(WIFCONTINUED(status)) {
-                    printf("Reprendre");
-                    update_job_status(pid,status);
+                    if(job != NULL) {
+                        job->status = JOB_STATUS_RUNNING;
+                    }
                 }
-                else {
-                    perror("Le processus fils ne s'est pas terminé normalement.\n");
-                }
+                print_one_job(STDERR_FILENO,job);
             }
             free(res);
-        } 
-        else {
-            // Processus en arrière-plan, ne pas attendre
-            char* res = concatenate_arguments(args);
-            create_job(pid, res,1);   
-       }
-        freeAll(args,args_count+1);
+        }
+        else{
+            free(res);
+            print_one_job(STDERR_FILENO,job);
+        }
     }
+    freeAll(args,args_count+1);
 }
 
 void signal_f(){

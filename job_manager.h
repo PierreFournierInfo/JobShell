@@ -25,7 +25,7 @@ enum JobStatus {
 // Structure pour représenter un job
 typedef struct Job{
     int id;               // Identifiant du job
-    pid_t process_id;     // Identifiant du processus
+    pid_t process_id;     // Identifiant du processus , processus su groupe plus tard 
     enum JobStatus status; // État du job
     char* command;         // Commande associée au job
     struct Job* next;   // Pointeur vers le prochain job dans la liste
@@ -38,17 +38,9 @@ typedef struct Job{
 void create_job(pid_t process_id, const char *command, int back);
 void add_job( Job *job);
 
-//void update_job_status(pid_t process_id, enum JobStatus new_status);
-void update_job_status(pid_t process_id, int status);
-//void update_job_status_bis(pid_t process_id, int status,char* command);
-
-void remove_completed_jobs();
-void print_jobs();
+void remove_job(Job* j);
+void print_one_job();
 void free_jobs();
-enum JobStatus check_job_status(pid_t process_id);//,Job* current);
-
-void bg_command(const char *job_id_str);
-void fg_command(const char *job_id_str);
 
 Job *find_job_by_process_id(int job_pid);
 Job *find_job_by_id(int job_id);
@@ -58,6 +50,7 @@ void update_background_jobs();
 
 void check_all();
 void print_jobs_f(Job *node) ;
+void print_jobs();
 
 bool empty_jobs();
 #endif 

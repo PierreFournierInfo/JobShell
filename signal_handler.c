@@ -42,7 +42,7 @@ int killProject(char ** c){
             int numJob=atoi(c[1]+1); 
             Job *job = find_job_by_id(numJob);
             if(job){
-                killpg(job->process_id, signal);
+                kill(-job->process_id, signal);
             }else{
                 fprintf(stderr,"Job %d non trouvé\n", numJob);
                 return 2;
@@ -65,7 +65,7 @@ int killProject(char ** c){
            int numJob=atoi(c[2]+1);
            Job *job = find_job_by_id(numJob);
             if(job){
-                killpg(job->process_id, signal);
+                kill(-job->process_id, signal);
             }else{
                 fprintf(stderr,"Job %d non trouvé\n", numJob);
                 return 4;

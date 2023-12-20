@@ -11,8 +11,8 @@
 #include <errno.h>
 
 extern int valeur_de_retour;
-void execute_internal_command(const char *command);
-bool is_internal_command(const char *command);
-bool is_exit_command(const char *command);
+void execute_internal_command(char *command);
+bool is_internal_command(char *command);
+bool is_exit_command(char *command);
 
 #endif // COMMAND_PARSER_H
