@@ -30,14 +30,18 @@ typedef struct Job{
     char* command;         // Commande associée au job
     struct Job* next;   // Pointeur vers le prochain job dans la liste
     int exit_status;  // Code de sortie du processus
+    
+    int background ; // si on a une fonction en arrière plan 0 si oui 
 } Job;
 
 // Fonctions du module de gestion des tâches
-void create_job(pid_t process_id, const char *command);
+void create_job(pid_t process_id, const char *command, int back);
 void add_job( Job *job);
 
 //void update_job_status(pid_t process_id, enum JobStatus new_status);
 void update_job_status(pid_t process_id, int status);
+//void update_job_status_bis(pid_t process_id, int status,char* command);
+
 void remove_completed_jobs();
 void print_jobs();
 void free_jobs();

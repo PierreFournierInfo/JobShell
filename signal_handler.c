@@ -27,7 +27,6 @@ int killProject(char ** c){
 
     //par défaut
     int signal=SIGTERM;
-    char debut= c[0][0];
     int size= taille(c);
 
     //Trop d'arguments erreur de commande
@@ -78,26 +77,20 @@ int killProject(char ** c){
                 fprintf(stderr, "Probleme kill"); 
                 return 5;
             }
-
         }
-
     }
-
     return 0;
 }
 
 int pipeLimitedTwo( char * c1, char * c2){
-
     int fd [2];
     int taille1,taille2;
     char** command1=separerParEspaces(c1,&taille1);
     char** command2=separerParEspaces(c2,&taille2);
 
-
     if(pipe(fd)<0){
         return 1;
     }
-
     pid_t pid1=fork();
 
     if (pid1<0){
@@ -112,7 +105,8 @@ int pipeLimitedTwo( char * c1, char * c2){
         execute_command(command1[0],command1);
         perror("execute_commande");
         exit(EXIT_FAILURE);
-    }else{
+    }
+    else{
         close(fd[1]);
         dup2(fd[0],STDIN_FILENO);
         close(fd[0]);
@@ -122,12 +116,10 @@ int pipeLimitedTwo( char * c1, char * c2){
         execute_command(command2[0],command2);
         perror("execute_commande");
         return 0;
-
     }
     return 0;
 }
 
-// Normalement dans signal handler 
 void ignore_signals() {
     struct sigaction act = {0};
     

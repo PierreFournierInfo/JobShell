@@ -24,6 +24,7 @@ void execute_command(char *command, char *args[]) {
         exit(EXIT_FAILURE);
     } 
     else if (pid == 0) {
+        setpgid(0,0);
          // Processus fils
         if (background) {
             signal_f();
@@ -33,37 +34,41 @@ void execute_command(char *command, char *args[]) {
         
         perror("JSH ");
         exit(EXIT_FAILURE);
-    } else {
+    } 
+    else {
         // Processus parent
-        if (!background) {
-            // Attendre le processus fils si ce n'est pas un processus en arrière-plan
+        if (!background) { // pas à l'arrière plan 
             int status;
-            waitpid(pid, &status, 0);
-
-            // Mise à jour de l'état du job
-            if (WIFEXITED(status)) {
-                valeur_de_retour = WEXITSTATUS(status);
-                update_job_status(pid, WEXITSTATUS(status));
-            } else if (WIFSTOPPED(status)) {
-                create_job(pid, command);
-                valeur_de_retour = WEXITSTATUS(status);
-                update_job_status(pid, -1);
-            } else if (WIFSIGNALED(status)) {
-                valeur_de_retour = WEXITSTATUS(status);
-                update_job_status(pid, WTERMSIG(status));
-            } else {
-                perror("Le processus fils ne s'est pas terminé normalement.\n");
+            char* res = concatenate_arguments(args);
+            create_job(pid,res,0);
+            if (waitpid(pid, &status, WNOHANG) == 0) {
+                // Le processus fils est toujours en cours d'exécution
+                waitpid(pid, &status, 0);
+                
+                // Mise à jour de l'état du job
+                if (WIFEXITED(status)) {
+                    valeur_de_retour = WEXITSTATUS(status);
+                    update_job_status(pid,JOB_STATUS_DONE);
+                }
+                else if (WIFSTOPPED(status)) {
+                    valeur_de_retour = WEXITSTATUS(status);
+                    update_job_status(pid,status);
+                }
+                else if (WIFSIGNALED(status)) {
+                    //valeur_de_retour = W(status);
+                    update_job_status(pid,status);
+                } 
+                else {
+                    perror("Le processus fils ne s'est pas terminé normalement.\n");
+                }
             }
-        } else {
+            free(res);
+        } 
+        else {
             // Processus en arrière-plan, ne pas attendre
             char* res = concatenate_arguments(args);
-         
-            create_job(pid, res);   
-
-            //setpgid(0, 0);  // Définir le groupe de processus du shell comme le groupe de contrôle du terminal
-            // Vérifier et mettre à jour l'état des processus en arrière-plan
-        }
-
+            create_job(pid, res,1);   
+       }
         freeAll(args,args_count+1);
     }
 }
