@@ -18,7 +18,7 @@ void execute_cd(char *command) {
     
     // Si l'argument n'est pas fourni, affiche un message d'erreur
     if (arg == NULL || strlen(arg) <= 1) {
-        fprintf(stderr, "Usage: cd [directory]\n");
+        dprintf(STDERR_FILENO, "Usage: cd [directory]\n");
         return;
     }
 
@@ -30,7 +30,7 @@ void execute_cd(char *command) {
             perror("chdir");
         }
     } else {
-        fprintf(stderr, "Directory '%s' does not exist. \n ", arg);
+        dprintf(STDERR_FILENO, "Directory '%s' does not exist. \n ", arg);
     }
 }
 
@@ -75,7 +75,7 @@ void execute_internal_command(char *command) {
                 }
             } else {
                 // Si le répertoire personnel n'est pas défini dans l'environnement
-                fprintf(stderr, "HOME not set.\n");
+                dprintf(STDERR_FILENO, "HOME not set.\n");
             }
         }
         else{
@@ -120,8 +120,8 @@ void execute_internal_command(char *command) {
             }
         }
         else{
-            fprintf(stderr,"exit\n");
-            fprintf(stderr,"There are stopped jobs.\n");
+            dprintf(STDERR_FILENO,"exit\n");
+            dprintf(STDERR_FILENO,"There are stopped jobs.\n");
             //free(command);
             valeur_de_retour = 1;
         }

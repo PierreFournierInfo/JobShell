@@ -31,7 +31,7 @@ int killProject(char ** c){
 
     //Trop d'arguments erreur de commande
     if(size>3){
-        fprintf(stderr, "Erreur: Trop d'arguments\n");
+        dprintf(STDERR_FILENO, "Erreur: Trop d'arguments\n");
         return 1;
     }
 
@@ -44,14 +44,14 @@ int killProject(char ** c){
             if(job){
                 kill(-job->process_id, signal);
             }else{
-                fprintf(stderr,"Job %d non trouvé\n", numJob);
+                dprintf(STDERR_FILENO,"Job %d non trouvé\n", numJob);
                 return 2;
             }
         }else{  //  kill pid  ---> ici on cherche à envoyer SIGTERM au processus de l'identifiant pid
 
             pid_t pid=atoi(c[1]);
             if(kill(pid,signal)<0){
-                fprintf(stderr, "Probleme kill"); 
+                dprintf(STDERR_FILENO, "Probleme kill"); 
                 return 3;
             }
         }
@@ -67,14 +67,14 @@ int killProject(char ** c){
             if(job){
                 kill(-job->process_id, signal);
             }else{
-                fprintf(stderr,"Job %d non trouvé\n", numJob);
+                dprintf(STDERR_FILENO,"Job %d non trouvé\n", numJob);
                 return 4;
             }
         }else{  //  kill [-sig] pid  ---> ici on cherche à envoyer sig(signal) au processus de l'identifiant pid
            //* 
            pid_t pid=atoi(c[2]);
            if(kill(pid,signal)<0){
-                fprintf(stderr, "Probleme kill"); 
+                dprintf(STDERR_FILENO, "Probleme kill"); 
                 return 5;
             }
         }

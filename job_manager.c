@@ -16,7 +16,7 @@ void create_job(pid_t process_id, const char *command, int back) {
         new_job->exit_status = 0; // Initialiser le code de sortie
         // Vérification de notre allocation de mémoire 
         new_job -> command = (char *)malloc(strlen(command) + 1);
-        if(new_job->command == NULL ) { fprintf(stderr,"Erreur job allocation de mémoire"); exit(EXIT_FAILURE);}
+        if(new_job->command == NULL ) { dprintf(STDERR_FILENO,"Erreur job allocation de mémoire"); exit(EXIT_FAILURE);}
         strcpy(new_job->command,command);
         new_job->next = NULL;
     }

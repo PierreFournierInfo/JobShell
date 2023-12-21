@@ -73,7 +73,7 @@ char** separerParEspaces(const char* chaine, int* taille) {
     *taille = nombreEspaces + 2; // pour gérer les fins de mots avec ou sans espaces et pour avoir suffisamment de place
     char** result = malloc((nombreEspaces + 2) * sizeof(char*));
     if (result == NULL) {
-        fprintf(stderr, "Erreur lors de l'allocation de mémoire pour le tableau.\n");
+        dprintf(STDERR_FILENO, "Erreur lors de l'allocation de mémoire pour le tableau.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -88,7 +88,7 @@ char** separerParEspaces(const char* chaine, int* taille) {
             // Allouer de la mémoire pour le mot
             result[index] = malloc((it - debutMot + 1) * sizeof(char));
             if (result[index] == NULL) {
-                fprintf(stderr, "Erreur lors de l'allocation de mémoire pour le mot.\n");
+                dprintf(STDERR_FILENO, "Erreur lors de l'allocation de mémoire pour le mot.\n");
                 exit(EXIT_FAILURE);
             }
             // Copier le mot dans le tableau
