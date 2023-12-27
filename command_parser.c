@@ -1,6 +1,6 @@
 #include "command_parser.h"
 
-#define PATH_MAX 512
+#define PATH_MAX_ 512
 
 int valeur_de_retour = 0;
 char chemin[1024];
@@ -49,7 +49,7 @@ void execute_internal_command(char *command) {
     if (strcmp(command, "pwd") == 0) {
         //printf("test pwd 2 \n");
         // Variable pour stocker le répertoire de travail courant
-        char current_dir[PATH_MAX];
+        char current_dir[PATH_MAX_];
         
         // Obtient le répertoire de travail courant
         if (getcwd(current_dir, sizeof(current_dir)) != NULL) {

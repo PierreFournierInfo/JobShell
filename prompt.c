@@ -138,7 +138,6 @@ void afficherTableauChar(char **tableau) {
 }
 
 void traiteCommande(){
-//ignore_signals_P();
  
  while (1) {
         check_all();   
@@ -152,7 +151,7 @@ void traiteCommande(){
             break;  
         }
 
-        add_history(input);  // Ajoute à la commande à l'historique readline
+        add_history(input); 
 
         if(redirection_verif(input)){  // vérification de la possibilité de redirection 
             int taille=0;
@@ -165,6 +164,23 @@ void traiteCommande(){
         // Jobs sans option pour le moment 
         else if(strcmp(input,"jobs")==0){
             print_jobs();
+            free(input);
+        }
+        else if(strncmp(input,"jobs -t",7)==0){
+            int taille=0;
+            char** res = separerParEspaces(input,&taille);
+            // printf("%d\n",taille);
+            if(taille <= 3){
+                print_jobs_t(0);
+            }
+            else{
+                char* v = res[2];
+                int num;
+                sscanf(v, "%%%d", &num);
+                //printf("%d\n",num);
+                print_jobs_t(num);
+            }
+            freeAll(res,taille);
             free(input);
         }
         else if(strncmp(input,"kill",4)==0){
@@ -194,14 +210,12 @@ void traiteCommande(){
             strcmp(input, "?") == 0 || 
             strncmp(input, "exit",4) == 0) {
             execute_internal_command(input); 
-            free(input);  // Libère la mémoire rl_outstreamallouée pour la ligne de commande lue
+            free(input);  // Libère la mémoire rl_outstream allouée pour la ligne de commande lue
          } 
          else { 
                 int taille=0;
                 char** res = separerParEspaces(input,&taille);
-                // Affichage des résultats tests 
-                if(strlen(input)>0) execute_command(res[0],res);
-                
+                if(strlen(input)>0) execute_command(res[0],res);  
                 free(input);
         }
     }

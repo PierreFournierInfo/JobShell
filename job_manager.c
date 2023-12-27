@@ -119,6 +119,94 @@ void print_jobs() {
         }
 }
 
+// Fonction pour afficher la liste des jobs avec l'option -t
+void print_jobs_t(int job_id) {
+    Job *current;
+    int x = -1;
+    pid_t res;
+    int status;
+
+    while ((res = waitpid(x, &status, WNOHANG)) > 0) {
+        current = jobs_list;
+             while(current != NULL) {
+                pid_t pid = current->process_id;
+                Job* next = current->next;
+                if (pid == res){
+                    if (WIFEXITED(status)) {
+                        current->status = JOB_STATUS_DONE;
+                    } 
+               }
+                if(current->status == JOB_STATUS_DONE){ 
+                    print_one_job(STDOUT_FILENO,current);
+                    remove_job(current);
+                }
+                current = next;
+            }
+    }
+
+    if(job_id == 0) {
+     current = jobs_list;
+    }
+    else{
+        current = find_job_by_id(job_id);
+        x = current->process_id;
+    }
+     while (current != NULL) {
+            if (job_id == 0 || current->id == job_id) {
+                print_one_job(STDOUT_FILENO, current);
+
+                //waitpid(-current->process_id, NULL, WUNTRACED);
+                print_process_tree(current->process_id, 1);
+            }
+            current = current->next;
+    }
+}
+
+void print_process_tree(pid_t parent_pid, int depth) {
+    DIR *dir = opendir("/proc");
+    if (dir == NULL) {
+        perror("Error opening /proc directory");
+        exit(EXIT_FAILURE);
+    }
+   struct dirent *entry;
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type == DT_DIR && atoi(entry->d_name) != 0) {
+            char proc_path[256];
+            snprintf(proc_path, sizeof(proc_path), "/proc/%s", entry->d_name);
+
+            int cmdline_fd = open(strcat(proc_path, "/stat"), O_RDONLY);
+            if (cmdline_fd == -1) {
+                perror("Error opening stat file open");
+                exit(EXIT_FAILURE);
+            }
+
+            int pid, ppid;
+            if (read(cmdline_fd, &pid, sizeof(pid)) == -1) {
+                perror("Error reading stat file pid");
+                exit(EXIT_FAILURE);
+            }
+
+            if (read(cmdline_fd, &ppid, sizeof(ppid)) == -1) {
+                perror("Error reading stat file ppid");
+                exit(EXIT_FAILURE);
+            }
+
+            close(cmdline_fd);
+
+            // Vérification processus fils du parent
+            if (ppid == parent_pid) {
+                for (int i = 0; i < depth; ++i) {
+                    printf("  ");
+                }
+                printf("%d\n", pid);
+                print_process_tree(pid, depth + 1);
+            }
+        }
+    }
+    closedir(dir);
+}
+
+
 // Fonction pour trouver un job par son PID
 Job *find_job_by_process_id(int job_id) {
     Job *current_job = jobs_list; // Notre tête de liste normalement 

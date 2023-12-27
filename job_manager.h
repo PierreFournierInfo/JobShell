@@ -11,8 +11,11 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <dirent.h>
+#include <fcntl.h>
 
 #define MAX_JOBS 512
+#define MAX_BUFFER_SIZE 1024
 // Définir les états des jobs
 extern int job_count;
 enum JobStatus {
@@ -53,4 +56,8 @@ void print_jobs_f(Job *node) ;
 void print_jobs();
 
 bool empty_jobs();
+
+void print_jobs_t(int job_id);
+void print_process_tree(pid_t parent_pid, int depth);
+
 #endif 
