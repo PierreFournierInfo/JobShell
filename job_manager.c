@@ -12,6 +12,9 @@ void create_job(pid_t process_id, const char *command, int back) {
         /* assigner un ID unique */
         new_job->id = ++job_count;
         new_job->process_id = process_id;
+
+        new_job->process_group_id = 0;
+
         new_job->status = JOB_STATUS_RUNNING;
         new_job->exit_status = 0; // Initialiser le code de sortie
         // Vérification de notre allocation de mémoire 

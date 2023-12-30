@@ -119,20 +119,3 @@ int pipeLimitedTwo( char * c1, char * c2){
     }
     return 0;
 }
-
-void ignore_signals() {
-    struct sigaction act = {0};
-    
-    // Ignorer le signal Ctrl+C (^C)
-    act.sa_handler = SIG_IGN;
-    if (sigaction(SIGINT, &act, NULL) == -1) {
-        perror("sigaction");
-        exit(EXIT_FAILURE);
-    }
-
-    // Ignorer le signal Ctrl+Z (^Z)
-    if (sigaction(SIGTSTP, &act, NULL) == -1) {
-        perror("sigaction");
-        exit(EXIT_FAILURE);
-    }
-}

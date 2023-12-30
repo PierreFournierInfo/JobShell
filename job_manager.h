@@ -29,6 +29,7 @@ enum JobStatus {
 typedef struct Job{
     int id;               // Identifiant du job
     pid_t process_id;     // Identifiant du processus , processus su groupe plus tard 
+    pid_t process_group_id;
     enum JobStatus status; // État du job
     char* command;         // Commande associée au job
     struct Job* next;   // Pointeur vers le prochain job dans la liste

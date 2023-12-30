@@ -17,4 +17,6 @@ void signal_f();
 
 void printf_r(char ** args);
 char* concatenate_arguments(char *args[]);
+
+void restore_default_signals();
 #endif 

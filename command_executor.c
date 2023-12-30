@@ -4,9 +4,10 @@
 #include "job_manager.h"
 
 void execute_command(char *command, char *args[]) {
-    int background = 0;  // Variable pour indiquer s'il s'agit d'un processus en arrière-plan
-
-   // Vérifier si le dernier argument est "&"
+       
+    int background = 0; 
+   
+    // Vérifier si le dernier argument est "&"
     size_t args_count = 0;
     while (args[args_count] != NULL) {
         args_count++;
@@ -26,8 +27,9 @@ void execute_command(char *command, char *args[]) {
         exit(EXIT_FAILURE);
     } 
     else if (pid == 0) {
-        setpgid(0,0);
-
+        restore_default_signals();
+        //setpgid(0,0);
+        
         valeur_de_retour = execvp(command, args);
         
         perror("JSH ");
@@ -41,12 +43,26 @@ void execute_command(char *command, char *args[]) {
         
         Job* job = find_job_by_process_id(pid);
 
-        // Processus parent
+        if(job->process_group_id == 0){
+            job->process_group_id = pid;
+            if(job->background==0){
+                //printf("Background");
+                tcsetpgrp(STDIN_FILENO,pid);
+                tcsetpgrp(STDOUT_FILENO,pid);
+                tcsetpgrp(STDERR_FILENO,pid);
+            }
+        }
+        setpgid(pid,job->process_group_id);
+
         if (!background) { // pas à l'arrière plan 
+        
             int status;
             //printf("Je suis en avant \n");
             if (waitpid(pid, &status, WCONTINUED | WUNTRACED )>0) {
-
+                  
+                tcsetpgrp(STDIN_FILENO,getpgrp()); 
+                tcsetpgrp(STDOUT_FILENO,getpgrp()); 
+                tcsetpgrp(STDERR_FILENO,getpgrp());
                
                 // Mise à jour de l'état du job
                 if (WIFEXITED(status)) {
@@ -143,5 +159,30 @@ char* concatenate_arguments(char *args[]) {
     return result;
 }
 
+void restore_default_signals() {
+    if (signal(SIGINT, SIG_DFL) == SIG_ERR) {
+        perror("signal(SIGINT)");
+    }
+
+    if (signal(SIGTERM, SIG_DFL) == SIG_ERR) {
+        perror("signal(SIGTERM)");
+    }
+
+    if (signal(SIGTTIN, SIG_DFL) == SIG_ERR) {
+        perror("signal(SIGTTIN)");
+    }
+
+    if (signal(SIGQUIT, SIG_DFL) == SIG_ERR) {
+        perror("signal(SIGQUIT)");
+    }
+
+    if (signal(SIGTTOU, SIG_DFL) == SIG_ERR) {
+        perror("signal(SIGTTOU)");
+    }
+
+    if (signal(SIGTSTP, SIG_DFL) == SIG_ERR) {
+        perror("signal(SIGTSTP)");
+    }
+}
 
 
