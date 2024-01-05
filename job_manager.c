@@ -282,7 +282,6 @@ void check_all() {
             } 
     }
 }
-        
 
 // Fonction pour libérer la mémoire des jobs
 void free_jobs() {
@@ -352,7 +351,6 @@ void fg_command(const char *job_id_str) {
         tcsetpgrp(STDERR_FILENO, getpgrp());
 
         if (WIFEXITED(status)) {
-     
             if (job != NULL) {
                 job->status = JOB_STATUS_DONE;
                 remove_job(job);

@@ -77,12 +77,16 @@ void execute_command(char *command, char *args[]) {
                         return;
                     }   
                 } else if (WIFSIGNALED(status)) {
-                    dprintf(STDERR_FILENO,"Signal reçu \n");
+                    dprintf(STDERR_FILENO,"Terminated \n");
                     if(job != NULL) {
+                        //dprintf(STDERR_FILENO,"Terminated 2\n");    
                         job->status = JOB_STATUS_KILLED;
+                         remove_job(job);
+                        free(res);
+                        freeAll(args,args_count+1);
+                        return;
                     }
                 } else if (WIFSTOPPED(status)) {
-                    //printf(" je suis stoppé\n");
                     if(job != NULL) {
                         job->status = JOB_STATUS_STOPPED;
                     }
