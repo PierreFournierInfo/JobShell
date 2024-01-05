@@ -336,45 +336,38 @@ void fg_command(const char *job_id_str) {
     }
 
     if (job->status == JOB_STATUS_STOPPED || job->status == JOB_STATUS_RUNNING) {
-        // Envoyer le signal SIGCONT pour reprendre l'exécution du processus en arrière-plan
         if (kill(-job->process_group_id, SIGCONT) == -1) {
             perror("kill");
         }
 
         job->status = JOB_STATUS_RUNNING;
-        job->background = 0; // Mettre à jour pour indiquer qu'il est en avant-plan
+        job->background = 0; 
+       // dprintf(STDERR_FILENO, "[%d]%s\tRunning\t%s\n", job->id, job->background ? "&" : "", job->command);
 
-        dprintf(STDERR_FILENO, "[%d]%s\tRunning\t%s\n", job->id, job->background ? "&" : "", job->command);
-
-        // Attendre la reprise du processus en avant-plan
         int status;
         waitpid(-job->process_group_id, &status, WUNTRACED);
 
-        // Rétablir le groupe de processus en avant-plan après la fin du processus
         tcsetpgrp(STDIN_FILENO, getpgrp());
         tcsetpgrp(STDOUT_FILENO, getpgrp());
         tcsetpgrp(STDERR_FILENO, getpgrp());
 
-        // Mise à jour de l'état du job
         if (WIFEXITED(status)) {
-            //int valeur_de_retour = WEXITSTATUS(status);
-
+     
             if (job != NULL) {
                 job->status = JOB_STATUS_DONE;
                 remove_job(job);
             }
         } else if (WIFSIGNALED(status)) {
-            dprintf(STDERR_FILENO, "Signal reçu\n");
+            //dprintf(STDERR_FILENO, "Signal reçu\n");
             if (job != NULL) {
                 job->status = JOB_STATUS_KILLED;
             }
         } else if (WIFSTOPPED(status)) {
-            dprintf(STDERR_FILENO, "Je suis stoppé\n");
+            //dprintf(STDERR_FILENO, "Je suis stoppé\n");
             if (job != NULL) {
                 job->status = JOB_STATUS_STOPPED;
             }
         }
-        //print_one_job(STDERR_FILENO, job);
     } else {
         dprintf(STDERR_FILENO, "Job with ID %d is not stopped or running\n", job_id);
     }
