@@ -61,4 +61,7 @@ bool empty_jobs();
 void print_jobs_t(int job_id);
 void print_process_tree(pid_t parent_pid, int depth);
 
+
+void bg_command(const char *job_id_str);
+void fg_command(const char *job_id_str);
 #endif 

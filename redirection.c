@@ -20,7 +20,6 @@ size_t tailleTableauChar(char **tableau) {
 
 char** before_com(char **res){
      size_t taille = tailleTableauChar(res);
-    // Utilisez sizeof(char*) pour allouer la mémoire pour le tableau de pointeurs
     char** t = malloc(sizeof(char*) * (taille + 1));
 
     if (t == NULL) {
@@ -72,15 +71,12 @@ void command_r(char** res,int taille){
         if (child_pid == 0)    {  // Code du processus enfant
             redirect(res,pipefd,taille); 
     
-            // Exécuter la commande interne dans le processus enfant
             execute_internal_command(res[0]);
 
-            // Si la commande est "exit", terminer le processus enfant avec exit
             if (strncmp(res[0], "exit", 4) == 0) {
                 exit(EXIT_SUCCESS);
             }
 
-            // Sinon, le processus enfant se termine sans exit
             exit(EXIT_FAILURE);
         }
         else {  // Code du processus parent
@@ -90,12 +86,9 @@ void command_r(char** res,int taille){
             int status = 0;
             waitpid(child_pid, &status, 0);
             
-            // Vérifier si le processus fils s'est terminé normalement
             if (WIFEXITED(status)) {
                 // Vérifier le code de sortie du processus fils
                 int exit_status = WEXITSTATUS(status);
-                //valeur_de_retour = exit_status;
-                // Vous pouvez utiliser exit_status pour savoir si la commande était "exit"
                 if (exit_status == EXIT_SUCCESS) {
                     //printf("Le processus fils a exécuté la commande 'exit'\n");
                     exit(valeur_de_retour);
@@ -116,7 +109,6 @@ void command_r(char** res,int taille){
         pid_t child_pid;
         if (pipe(pipefd) != 0) { perror("Erreur au pipe"); exit(EXIT_FAILURE);}
 
-        // Creation du fils pour executer la commande à gauche 
         child_pid = fork();
         if (child_pid < 0) { perror("Erreur fork");  exit(EXIT_FAILURE);}
 
@@ -125,17 +117,15 @@ void command_r(char** res,int taille){
             //afficherTableauChar(res);
             redirect(res,pipefd,taille); 
     
-            // Exécuter la commande interne dans le processus enfant
             char** utilisation = before_com(res);
-            //afficherTableauChar(utilisation);
-
+         
             execute_command(utilisation[0],utilisation);
             
             exit(EXIT_SUCCESS);
         }
-        else {  // Code du processus parent
-            close(pipefd[1]);  // Fermer la fin inutilisée du pipe en écriture 
-
+        else { 
+             // Code du processus parent
+            close(pipefd[1]);
             // Attendre la fin de l'exécution du processus enfant
             int status;
             waitpid(child_pid, &status, 0);

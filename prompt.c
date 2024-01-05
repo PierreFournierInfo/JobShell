@@ -192,18 +192,18 @@ void traiteCommande(){
         }
         
         //bg ou fg
-        /*
+        
         else if(strncmp(input,"bg",2)==0 || strncmp(input,"fg",2)==0){
             int taille = 0;
             char** res = separerParEspaces(input,&taille);
-            //printf("bg fg :  %s \n", res[1]);
+            //printf("bg fg :  %c \n", res[1][2]);
             if(strncmp(input,"bg",2)==0) bg_command(res[1]);
             else fg_command(res[1]);
 
             freeAll(res,taille);
             free(input);
         }
-        */
+        
         // Vérifie si la commande est une commande interne (pwd, cd, ?, exit)
         else if(strcmp(input, "pwd") == 0 || 
             strncmp(input, "cd", 2) == 0 || 

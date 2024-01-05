@@ -174,7 +174,7 @@ void print_process_tree(pid_t parent_pid, int depth) {
    struct dirent *entry;
     while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_DIR && atoi(entry->d_name) != 0) {
-            char proc_path[256];
+            char proc_path[512];
             snprintf(proc_path, sizeof(proc_path), "/proc/%s", entry->d_name);
 
             int cmdline_fd = open(strcat(proc_path, "/stat"), O_RDONLY);
@@ -299,4 +299,83 @@ void free_jobs() {
 // fonction pour vérifier si notre liste est null
 bool empty_jobs(){
     return jobs_list == NULL;
+}
+
+
+// Fonction pour relancer à l'arrière-plan l'exécution du job spécifié en argument
+void bg_command(const char *job_id_str) {
+    int job_id = job_id_str[1] - '0';
+    //printf("bg comamnd %d\n", job_id);
+    Job *job = find_job_by_id(job_id);
+
+    if (job == NULL) {
+        dprintf(STDERR_FILENO, "Job with ID %d not found\n", job_id);
+        return;
+    }
+
+    if (job->status == JOB_STATUS_STOPPED) {
+        if (kill(-job->process_group_id, SIGCONT) == -1) {
+            perror("kill");
+        }
+        job->status = JOB_STATUS_RUNNING;
+
+        //dprintf(STDERR_FILENO, "[%d]%s\tRunning\t%s\n", job->id, job->background ? "&" : "", job->command);
+    } else {
+        dprintf(STDERR_FILENO, "Job with ID %d is not stopped\n", job_id);
+    }
+}
+
+// Fonction pour relancer à l'avant-plan l'exécution du job spécifié en argument
+void fg_command(const char *job_id_str) {
+    int job_id = job_id_str[1] - '0';
+    Job *job = find_job_by_id(job_id);
+
+    if (job == NULL) {
+        dprintf(STDERR_FILENO, "Job with ID %d not found\n", job_id);
+        return;
+    }
+
+    if (job->status == JOB_STATUS_STOPPED || job->status == JOB_STATUS_RUNNING) {
+        // Envoyer le signal SIGCONT pour reprendre l'exécution du processus en arrière-plan
+        if (kill(-job->process_group_id, SIGCONT) == -1) {
+            perror("kill");
+        }
+
+        job->status = JOB_STATUS_RUNNING;
+        job->background = 0; // Mettre à jour pour indiquer qu'il est en avant-plan
+
+        dprintf(STDERR_FILENO, "[%d]%s\tRunning\t%s\n", job->id, job->background ? "&" : "", job->command);
+
+        // Attendre la reprise du processus en avant-plan
+        int status;
+        waitpid(-job->process_group_id, &status, WUNTRACED);
+
+        // Rétablir le groupe de processus en avant-plan après la fin du processus
+        tcsetpgrp(STDIN_FILENO, getpgrp());
+        tcsetpgrp(STDOUT_FILENO, getpgrp());
+        tcsetpgrp(STDERR_FILENO, getpgrp());
+
+        // Mise à jour de l'état du job
+        if (WIFEXITED(status)) {
+            //int valeur_de_retour = WEXITSTATUS(status);
+
+            if (job != NULL) {
+                job->status = JOB_STATUS_DONE;
+                remove_job(job);
+            }
+        } else if (WIFSIGNALED(status)) {
+            dprintf(STDERR_FILENO, "Signal reçu\n");
+            if (job != NULL) {
+                job->status = JOB_STATUS_KILLED;
+            }
+        } else if (WIFSTOPPED(status)) {
+            dprintf(STDERR_FILENO, "Je suis stoppé\n");
+            if (job != NULL) {
+                job->status = JOB_STATUS_STOPPED;
+            }
+        }
+        //print_one_job(STDERR_FILENO, job);
+    } else {
+        dprintf(STDERR_FILENO, "Job with ID %d is not stopped or running\n", job_id);
+    }
 }
