@@ -363,9 +363,10 @@ void fg_command(const char *job_id_str) {
                 job->status = JOB_STATUS_KILLED;
             }
         } else if (WIFSTOPPED(status)) {
-            //dprintf(STDERR_FILENO, "Je suis stoppé\n");
-            if (job != NULL) {
-                job->status = JOB_STATUS_STOPPED;
+             if (job != NULL) {             
+		dprintf(STDERR_FILENO,"[%d] %d Stopped %s\n", job->id, job->process_id, job->command);
+
+		job->status = JOB_STATUS_STOPPED;
             }
         }
     } else {
