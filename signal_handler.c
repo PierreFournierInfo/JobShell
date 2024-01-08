@@ -11,6 +11,58 @@
 #include "prompt.h"
 #include "command_executor.h"
 
+void ignore_signals() {
+    if (signal(SIGINT, SIG_IGN) == SIG_ERR) {
+        perror("signal(SIGINT)");
+    }
+
+    if (signal(SIGTERM, SIG_IGN) == SIG_ERR) {
+        perror("signal(SIGTERM)");
+    }
+
+    if (signal(SIGTTIN, SIG_IGN) == SIG_ERR) {
+        perror("signal(SIGTTIN)");
+    }
+
+    if (signal(SIGQUIT, SIG_IGN) == SIG_ERR) {
+        perror("signal(SIGQUIT)");
+    }
+
+    if (signal(SIGTTOU, SIG_IGN) == SIG_ERR) {
+        perror("signal(SIGTTOU)");
+    }
+
+    if (signal(SIGTSTP, SIG_IGN) == SIG_ERR) {
+        perror("signal(SIGTSTP)");
+    }
+}
+
+
+void restore_default_signals() {
+    if (signal(SIGINT, SIG_DFL) == SIG_ERR) {
+        perror("signal(SIGINT)");
+    }
+
+    if (signal(SIGTERM, SIG_DFL) == SIG_ERR) {
+        perror("signal(SIGTERM)");
+    }
+
+    if (signal(SIGTTIN, SIG_DFL) == SIG_ERR) {
+        perror("signal(SIGTTIN)");
+    }
+
+    if (signal(SIGQUIT, SIG_DFL) == SIG_ERR) {
+        perror("signal(SIGQUIT)");
+    }
+
+    if (signal(SIGTTOU, SIG_DFL) == SIG_ERR) {
+        perror("signal(SIGTTOU)");
+    }
+
+    if (signal(SIGTSTP, SIG_DFL) == SIG_ERR) {
+        perror("signal(SIGTSTP)");
+    }
+}
 
 int taille(char** chaine){
     int length = 0;

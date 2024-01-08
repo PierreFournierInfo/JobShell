@@ -1,8 +1,9 @@
 #include "redirection.h"
 #include "prompt.h"
+#include "signal_handler.h"
 
 size_t tailleTableauChar(char **tableau) {
-   size_t taille = 0;
+    size_t taille = 0;
     while ((tableau[taille] != NULL) && (
         strcmp(tableau[taille], "<") != 0 &&
         strcmp(tableau[taille], ">") != 0 &&
@@ -15,6 +16,24 @@ size_t tailleTableauChar(char **tableau) {
         taille++;
     }
     return taille;
+}
+
+bool redirection_verify_pipe(char** tableau,int t){
+    int taille = 0;
+    while (taille < t){
+        //dprintf(STDOUT_FILENO,"verif : %s \n",tableau[taille]);
+        if(
+        strcmp(tableau[taille], "<") == 0 ||
+        strcmp(tableau[taille], ">") == 0 ||
+        strcmp(tableau[taille], ">|") == 0 ||
+        strcmp(tableau[taille], ">>") == 0 ||
+        strcmp(tableau[taille], "2>") == 0 ||
+        strcmp(tableau[taille], "2>|") == 0 ||
+        strcmp(tableau[taille], "2>>") == 0
+        ){ return true; }
+        taille++;
+    }
+    return false;
 }
 
 
@@ -136,7 +155,6 @@ void command_r(char** res,int taille){
 
                 // Vérifier le code de sortie du processus fils
                 if (exit_status == EXIT_SUCCESS) {
-                    // Le processus fils s'est terminé normalement
                 } else {
                     // Le processus fils s'est terminé avec une erreur
                     valeur_de_retour = 1;
@@ -229,4 +247,103 @@ void redirect(char** res, int* pipefd, int taille) {
             close(fd);
         }
     }
+}
+
+
+
+//--------------------------------------------------------------- PIPE -----------------------------------------------------------------------
+
+void tokenizer(char *token[], char *s, char *delimParameter, int *total){    
+    int index = 0;
+
+    token[0] = strtok(s, delimParameter);
+    
+    while(token[index]!=NULL){
+        //printf("%s %d\n", token[index],index);
+        token[++index] = strtok(NULL, delimParameter);
+    }
+
+    // Returns the total no. of commands
+    *total = index;
+
+    //printf("Token end \n");
+}
+
+void command_pipe(char *command) {
+    // printf(" PIPE \n", command);
+    char *pipedCommand[10000];
+    int numPipeCommands = 0;
+
+    tokenizer(pipedCommand, command, "|", &numPipeCommands);
+
+    // File descriptor
+    //printf("%d \n", numPipeCommands);
+    int pipes[numPipeCommands - 1][2];
+    
+    for (int i = 0; i < numPipeCommands; i++) {
+        if (pipe(pipes[i]) == -1) {
+            perror("Pipe creation failed");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    for (int i = 0; i < numPipeCommands; i++) {
+        int lenOfEachPipeCommand = 0;
+        char *spaceSepPipedCommand[10000];
+
+        tokenizer(spaceSepPipedCommand, pipedCommand[i], " ", &lenOfEachPipeCommand);
+        
+        int returnedFork = fork();
+        if (returnedFork < 0) {
+            printf("failed to fork\n");
+        } else if (returnedFork == 0) {
+            restore_default_signals();
+
+            if (i > 0) {
+                close(pipes[i - 1][1]); 
+                dup2(pipes[i - 1][0], STDIN_FILENO);
+                close(pipes[i - 1][0]);
+            }
+
+            if (i < numPipeCommands - 1) {
+                close(pipes[i][0]);
+                dup2(pipes[i][1], STDOUT_FILENO);
+                close(pipes[i][1]);
+            }
+            
+            // if( redirection_verify_pipe(spaceSepPipedCommand,lenOfEachPipeCommand) ) {
+                
+            //     dprintf(STDOUT_FILENO," Redirection \n");
+            //     //afficherTableauChar(spaceSepPipedCommand);
+            //     //command_r(spaceSepPipedCommand,lenOfEachPipeCommand);
+            // }
+            // else{
+            //     dprintf(STDOUT_FILENO," Redirection faux  \n");
+            // }
+            // else{
+                execvp(spaceSepPipedCommand[0], spaceSepPipedCommand);
+           // }
+            perror("Failed execvp in pipe ");
+            exit(0);
+        } else {
+             if (i > 0) {
+                close(pipes[i - 1][0]);
+                close(pipes[i - 1][1]);
+            }
+        }
+    }
+
+    
+    for (int i = 0; i < numPipeCommands - 1; i++) {
+        close(pipes[i][0]);
+        close(pipes[i][1]);
+    }
+
+    for (int i = 0; i < numPipeCommands; i++) {
+        int wstatus = 0;
+        wait(&wstatus);
+    }
+    
+
+    return;
 }

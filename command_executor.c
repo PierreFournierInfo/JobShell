@@ -1,5 +1,6 @@
 #include <signal.h>
 #include "prompt.h"
+#include "signal_handler.h"
 #include "command_executor.h"
 #include "job_manager.h"
 
@@ -108,23 +109,6 @@ void execute_command(char *command, char *args[]) {
     freeAll(args,args_count+1);
 }
 
-void signal_f(){
-    struct sigaction act = {0};
-    act.sa_handler = SIG_DFL;  // Restaure le gestionnaire par défaut
-
-    // Restaure le gestionnaire par défaut pour SIGTSTP
-    if (sigaction(SIGTSTP, &act, NULL) == -1) {
-        perror("sigaction(SIGTSTP)");
-        exit(EXIT_FAILURE);
-    }
-
-    // Restaure le gestionnaire par défaut pour SIGCHLD
-    if (sigaction(SIGCHLD, &act, NULL) == -1) {
-        perror("sigaction(SIGCHLD)");
-        exit(EXIT_FAILURE);
-    }  
-}
-
 void printf_r(char ** args){
     int i=0;
     while(args[i] != NULL && (strcmp(args[i],"&") != 0)){
@@ -163,30 +147,5 @@ char* concatenate_arguments(char *args[]) {
     return result;
 }
 
-void restore_default_signals() {
-    if (signal(SIGINT, SIG_DFL) == SIG_ERR) {
-        perror("signal(SIGINT)");
-    }
-
-    if (signal(SIGTERM, SIG_DFL) == SIG_ERR) {
-        perror("signal(SIGTERM)");
-    }
-
-    if (signal(SIGTTIN, SIG_DFL) == SIG_ERR) {
-        perror("signal(SIGTTIN)");
-    }
-
-    if (signal(SIGQUIT, SIG_DFL) == SIG_ERR) {
-        perror("signal(SIGQUIT)");
-    }
-
-    if (signal(SIGTTOU, SIG_DFL) == SIG_ERR) {
-        perror("signal(SIGTTOU)");
-    }
-
-    if (signal(SIGTSTP, SIG_DFL) == SIG_ERR) {
-        perror("signal(SIGTSTP)");
-    }
-}
 
 

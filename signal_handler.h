@@ -12,7 +12,10 @@
 #include "command_executor.h"
 #include "job_manager.h"
 
+void ignore_signals();
+void restore_default_signals();
 int pipeLimitedTwo(char*, char*);
 int killProject(char ** c);
+
 
 #endif 

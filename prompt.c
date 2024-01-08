@@ -114,20 +114,38 @@ void freeAll(char** lib,int t){
 }
 
 bool redirection_verif(char* input){
-    for(size_t i=0;i<strlen(input);i++){
-        if(input[i]=='|') return true;
-        if(input[i]=='<'){
-            return true;
-        } 
+    for(size_t i=0;i< strlen(input);i++){
+        if(input[i]=='<')return true;
         if(input[i]=='>') return true;
+        if(input[i]=='>' && input[i+1]=='|') return true;
+        if(input[i]=='>' && input[i+1]=='>') return true;  
+        if(input[i]=='2' && input[i+1]=='>') return true;  
+        //if(input[i]=='|') ;
+        
     }
+    return false;
+}
+
+bool pipe_verif(char* input){
+    size_t input_length = strlen(input);
+
+    for (size_t i = 0; i < input_length; i++) {
+        if (input[i] == '|' && input[i-1] == ' ') {
+            // Vérifier s'il y a un espace après la chaîne '|'
+            //dprintf(STDOUT_FILENO,"%c", input[i]);
+            if (strncmp(input + i + 1, " ", 1) == 0) { 
+                return true;
+            }
+        }
+    }
+   // dprintf(STDIN_FILENO,"Pas trouvé \n");
     return false;
 }
 
 void afficherTableauChar(char **tableau) {
     // Vérification si le tableau est NULL
     if (tableau == NULL) {
-        printf("Le tableau est NULL.\n");
+        dprintf(STDOUT_FILENO,"Le tableau est NULL.\n");
         return;
     }
 
@@ -154,13 +172,25 @@ void traiteCommande(){
         add_history(input); 
 
         if(redirection_verif(input)){  // vérification de la possibilité de redirection 
+            bool pipi_v = pipe_verif(input);
+            if(!pipi_v) {
             int taille=0;
             char** res = separerParEspaces(input,&taille);
             //afficherTableauChar(res);
             command_r(res,taille);
             freeAll(res,taille);
             free(input); 
+            }
         }
+
+        // Pipe 
+        else if(pipe_verif(input)){
+            //dprintf(STDERR_FILENO,"Verif2\n");
+            //afficherTableauChar(res);
+            command_pipe(input);
+            free(input);
+        }
+
         // Jobs sans option pour le moment 
         else if(strcmp(input,"jobs")==0){
             print_jobs();
