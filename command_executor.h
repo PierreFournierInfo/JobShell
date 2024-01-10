@@ -1,6 +1,9 @@
 
 #ifndef COMMAND_EXECUTOR_H
 #define COMMAND_EXECUTOR_H
+#include <signal.h>
+#include "prompt.h"
+#include "signal_handler.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

@@ -79,7 +79,6 @@ void execute_internal_command(char *command) {
             }
         }
         else{
-        // Si on a des élément à la suite de la chaine
         char* suite = getSuite(command+3);
         if(strcmp(suite,"-") == 0){ 
             getcwd(ancien,sizeof(ancien));
@@ -132,7 +131,6 @@ void execute_internal_command(char *command) {
 }
 
 bool is_internal_command( char *command) {
-    // Ajoutez ici les autres commandes internes, si nécessaire
     return strcmp(command, "pwd") == 0 ||
            strncmp(command, "cd", 2) == 0 ||
            strcmp(command, "?") == 0 ||

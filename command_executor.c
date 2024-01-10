@@ -1,8 +1,5 @@
-#include <signal.h>
-#include "prompt.h"
-#include "signal_handler.h"
 #include "command_executor.h"
-#include "job_manager.h"
+
 
 void execute_command(char *command, char *args[]) {
        
