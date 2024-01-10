@@ -1,6 +1,7 @@
 #include "prompt.h"
 #include "signal_handler.h"
 #include "job_manager.h"
+#include "pipe.h"
 
 #define MAX_PROMPT_LEN 30
 
@@ -172,14 +173,20 @@ void traiteCommande(){
         add_history(input); 
 
         if(redirection_verif(input)){  // vérification de la possibilité de redirection 
+            // dprintf(STDOUT_FILENO, "Redirection\n");
             bool pipi_v = pipe_verif(input);
             if(!pipi_v) {
-            int taille=0;
-            char** res = separerParEspaces(input,&taille);
-            //afficherTableauChar(res);
-            command_r(res,taille);
-            freeAll(res,taille);
-            free(input); 
+                // dprintf(STDOUT_FILENO," Redirection verif \n");
+                int taille=0;
+                char** res = separerParEspaces(input,&taille);
+                //afficherTableauChar(res);
+                command_r(res,taille);
+                freeAll(res,taille);
+                free(input); 
+            }
+            else{
+                // dprintf(STDOUT_FILENO," Pipe redirection\n");
+                 command_pipe(input);
             }
         }
 

@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -std=c11 -D_DEFAULT_SOURCE
 LDFLAGS = -L. -lreadline
 
 TARGET = jsh
-OBJS = main.o prompt.o job_manager.o redirection.o command_parser.o command_executor.o signal_handler.o
+OBJS = main.o prompt.o job_manager.o redirection.o command_parser.o command_executor.o signal_handler.o pipe.o
 
 all: $(TARGET)
 
@@ -17,7 +17,8 @@ redirection.o: redirection.c redirection.h
 command_parser.o: command_parser.c command_parser.h
 command_executor.o: command_executor.c command_executor.h
 signal_handler.o: signal_handler.c signal_handler.h
- 
+pipe.o : pipe.c pipe.h
+
 # Règle pour nettoyer les fichiers compilés
 clean:
 	rm -f $(TARGET) $(OBJS)
