@@ -19,7 +19,6 @@ size_t tailleTableauChar(char **tableau) {
 }
 
 
-
 char** before_com(char **res){
      size_t taille = tailleTableauChar(res);
     char** t = malloc(sizeof(char*) * (taille + 1));
@@ -129,7 +128,6 @@ void command_r(char** res,int taille){
         else { 
              // Code du processus parent
             close(pipefd[1]);
-            // Attendre la fin de l'exécution du processus enfant
             int status;
             waitpid(child_pid, &status, 0);
            
@@ -150,7 +148,6 @@ void command_r(char** res,int taille){
                 }
             }
 
-            // Réinitialiser l'entrée standard pour permettre l'interaction utilisateur
             // Restaurer les descripteurs de fichiers standard
             if (dup2(STDIN_FILENO, 0) == -1 || dup2(STDOUT_FILENO, 1) == -1 || dup2(STDERR_FILENO, 2) == -1) {
                 perror("Erreur lors de la réinitialisation des descripteurs de fichiers standard");

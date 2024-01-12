@@ -22,4 +22,7 @@ void freeAll(char** lib,int t);
 bool redirection_verif(char* input);
 void afficherTableauChar(char **tableau);
 void traiteCommande();
-#endif // COMMAND_PARSER_H
+
+bool subVerif(char* input);
+
+#endif 

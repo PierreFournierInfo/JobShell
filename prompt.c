@@ -2,7 +2,7 @@
 #include "signal_handler.h"
 #include "job_manager.h"
 #include "pipe.h"
-
+#include "substitution.h"
 #define MAX_PROMPT_LEN 30
 
 char* display() {
@@ -122,7 +122,6 @@ bool redirection_verif(char* input){
         if(input[i]=='>' && input[i+1]=='>') return true;  
         if(input[i]=='2' && input[i+1]=='>') return true;  
         //if(input[i]=='|') ;
-        
     }
     return false;
 }
@@ -143,6 +142,21 @@ bool pipe_verif(char* input){
     return false;
 }
 
+bool subVerif(char* input){
+    size_t input_length = strlen(input);
+    for (size_t i = 0; i < input_length ; i++) {
+        if (input[i] == '<' && input[i-1] == ' ') {
+            if (strncmp(input + i + 1, "(", 1) == 0) { 
+                //dprintf(STDERR_FILENO," sub Verif \n");
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+
 void afficherTableauChar(char **tableau) {
     // Vérification si le tableau est NULL
     if (tableau == NULL) {
@@ -152,7 +166,7 @@ void afficherTableauChar(char **tableau) {
 
     // Parcours du tableau et affichage des éléments
     for (size_t i = 0; tableau[i] != NULL; ++i) {
-        printf("%s\n", tableau[i]);
+        dprintf(STDOUT_FILENO,"%s\n", tableau[i]);
     }
 }
 
@@ -172,10 +186,23 @@ void traiteCommande(){
 
         add_history(input); 
 
+
+        // Sub
+        // if(subVerif(input)){
+        //     //dprintf(STDERR_FILENO," SUB\n ");
+        //     int taille = 0;
+        //     char** res = separerParEspaces(input, &taille);
+
+
+        //     freeAll(res,taille);
+        //     free(input);
+        //     continue;
+        // }
+
         if(redirection_verif(input)){  // vérification de la possibilité de redirection 
             // dprintf(STDOUT_FILENO, "Redirection\n");
-            bool pipi_v = pipe_verif(input);
-            if(!pipi_v) {
+            bool pipe_v = pipe_verif(input);
+            if(!pipe_v) {
                 // dprintf(STDOUT_FILENO," Redirection verif \n");
                 int taille=0;
                 char** res = separerParEspaces(input,&taille);
@@ -229,7 +256,6 @@ void traiteCommande(){
         }
         
         //bg ou fg
-        
         else if(strncmp(input,"bg",2)==0 || strncmp(input,"fg",2)==0){
             int taille = 0;
             char** res = separerParEspaces(input,&taille);
