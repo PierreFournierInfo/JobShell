@@ -12,55 +12,64 @@
 #include "command_executor.h"
 
 void ignore_signals() {
-    if (signal(SIGINT, SIG_IGN) == SIG_ERR) {
-        perror("signal(SIGINT)");
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(struct sigaction));
+    sa.sa_handler = SIG_IGN;
+    sa.sa_flags = 0;
+
+    if (sigaction(SIGINT, &sa, NULL) == -1) {
+        perror("sigaction(SIGINT)");
     }
 
-    if (signal(SIGTERM, SIG_IGN) == SIG_ERR) {
-        perror("signal(SIGTERM)");
+    if (sigaction(SIGTERM, &sa, NULL) == -1) {
+        perror("sigaction(SIGTERM)");
     }
 
-    if (signal(SIGTTIN, SIG_IGN) == SIG_ERR) {
-        perror("signal(SIGTTIN)");
+    if (sigaction(SIGTTIN, &sa, NULL) == -1) {
+        perror("sigaction(SIGTTIN)");
     }
 
-    if (signal(SIGQUIT, SIG_IGN) == SIG_ERR) {
-        perror("signal(SIGQUIT)");
+    if (sigaction(SIGQUIT, &sa, NULL) == -1) {
+        perror("sigaction(SIGQUIT)");
     }
 
-    if (signal(SIGTTOU, SIG_IGN) == SIG_ERR) {
-        perror("signal(SIGTTOU)");
+    if (sigaction(SIGTTOU, &sa, NULL) == -1) {
+        perror("sigaction(SIGTTOU)");
     }
 
-    if (signal(SIGTSTP, SIG_IGN) == SIG_ERR) {
-        perror("signal(SIGTSTP)");
+    if (sigaction(SIGTSTP, &sa, NULL) == -1) {
+        perror("sigaction(SIGTSTP)");
     }
 }
 
-
 void restore_default_signals() {
-    if (signal(SIGINT, SIG_DFL) == SIG_ERR) {
-        perror("signal(SIGINT)");
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(struct sigaction));
+    sa.sa_handler = SIG_DFL;
+    sa.sa_flags = 0;
+
+    if (sigaction(SIGINT, &sa, NULL) == -1) {
+        perror("sigaction(SIGINT)");
     }
 
-    if (signal(SIGTERM, SIG_DFL) == SIG_ERR) {
-        perror("signal(SIGTERM)");
+    if (sigaction(SIGTERM, &sa, NULL) == -1) {
+        perror("sigaction(SIGTERM)");
     }
 
-    if (signal(SIGTTIN, SIG_DFL) == SIG_ERR) {
-        perror("signal(SIGTTIN)");
+    if (sigaction(SIGTTIN, &sa, NULL) == -1) {
+        perror("sigaction(SIGTTIN)");
     }
 
-    if (signal(SIGQUIT, SIG_DFL) == SIG_ERR) {
-        perror("signal(SIGQUIT)");
+    if (sigaction(SIGQUIT, &sa, NULL) == -1) {
+        perror("sigaction(SIGQUIT)");
     }
 
-    if (signal(SIGTTOU, SIG_DFL) == SIG_ERR) {
-        perror("signal(SIGTTOU)");
+    if (sigaction(SIGTTOU, &sa, NULL) == -1) {
+        perror("sigaction(SIGTTOU)");
     }
 
-    if (signal(SIGTSTP, SIG_DFL) == SIG_ERR) {
-        perror("signal(SIGTSTP)");
+    if (sigaction(SIGTSTP, &sa, NULL) == -1) {
+        perror("sigaction(SIGTSTP)");
     }
 }
 
