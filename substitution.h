@@ -1,0 +1,14 @@
+#ifndef SUBSITUTION_H
+#define SUBSTITUTION_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
+#include <sys/wait.h>
+
+
+void sub(char** command);
+
+#endif 

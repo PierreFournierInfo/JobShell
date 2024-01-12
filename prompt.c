@@ -188,16 +188,16 @@ void traiteCommande(){
 
 
         // Sub
-        // if(subVerif(input)){
-        //     //dprintf(STDERR_FILENO," SUB\n ");
-        //     int taille = 0;
-        //     char** res = separerParEspaces(input, &taille);
+        if(subVerif(input)){
+            //dprintf(STDERR_FILENO," SUB\n ");
+            int taille = 0;
+            char** res = separerParEspaces(input, &taille);
+            sub(res);
 
-
-        //     freeAll(res,taille);
-        //     free(input);
-        //     continue;
-        // }
+            freeAll(res,taille);
+            free(input);
+            continue;
+        }
 
         if(redirection_verif(input)){  // vérification de la possibilité de redirection 
             // dprintf(STDOUT_FILENO, "Redirection\n");
