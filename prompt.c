@@ -156,6 +156,39 @@ bool subVerif(char* input){
 }
 
 
+bool verifierChaineInvalide(const char *chaine) {
+    if (strstr(chaine, " | | ") != NULL) {
+        return false;
+    }
+    if (strstr(chaine, " | > ") != NULL) {
+        return false;
+    }
+    if (strstr(chaine, " < | ") != NULL) {
+        return false;
+    }
+    if (strstr(chaine, " > | ") != NULL) {
+        return false;
+    }
+    
+    return true;  
+}
+
+bool verifierTableauInvalide(const char *tableau[]) {
+    for (int i = 0; tableau[i] != NULL; ++i) {
+        if ( (strcmp(tableau[i], ">") == 0 && tableau[i + 1] == NULL)
+         || (strcmp(tableau[i], ">|") == 0 && tableau[i + 1] == NULL) 
+         || (strcmp(tableau[i], ">>") == 0 && tableau[i + 1] == NULL) 
+         || (strcmp(tableau[i], "2>") == 0 && tableau[i + 1] == NULL) 
+         || (strcmp(tableau[i], "2>>") == 0 && tableau[i + 1] == NULL) 
+         || (strcmp(tableau[i], "2>|") == 0 && tableau[i + 1] == NULL))  {
+            return false;  // Valeur NULL après ">"
+        }
+    }
+
+    return true;  // Le tableau est valide
+}
+
+
 
 void afficherTableauChar(char **tableau) {
     // Vérification si le tableau est NULL
@@ -192,7 +225,7 @@ void traiteCommande(){
             //dprintf(STDERR_FILENO," SUB\n ");
             int taille = 0;
             char** res = separerParEspaces(input, &taille);
-            sub(res);
+            sub(input);//,res);
 
             freeAll(res,taille);
             free(input);
@@ -206,14 +239,14 @@ void traiteCommande(){
                 // dprintf(STDOUT_FILENO," Redirection verif \n");
                 int taille=0;
                 char** res = separerParEspaces(input,&taille);
-                //afficherTableauChar(res);
-                command_r(res,taille);
+
+                if(verifierTableauInvalide(res)) command_r(res,taille);
                 freeAll(res,taille);
                 free(input); 
             }
             else{
                 // dprintf(STDOUT_FILENO," Pipe redirection\n");
-                 command_pipe(input);
+                 if(verifierChaineInvalide(input))command_pipe(input);
             }
         }
 
@@ -221,7 +254,7 @@ void traiteCommande(){
         else if(pipe_verif(input)){
             //dprintf(STDERR_FILENO,"Verif2\n");
             //afficherTableauChar(res);
-            command_pipe(input);
+            if(verifierChaineInvalide(input)) command_pipe(input);
             free(input);
         }
 

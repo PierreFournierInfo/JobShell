@@ -25,4 +25,7 @@ void traiteCommande();
 
 bool subVerif(char* input);
 
+bool verifierTableauInvalide(const char *tableau[]);
+bool verifierChaineInvalide(const char *chaine);
+
 #endif 
